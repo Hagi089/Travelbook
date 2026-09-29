@@ -1,6 +1,6 @@
 import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
-import { GpxDb, getTrackPoints, listTours, seedDefaultCategories } from '../src/db';
+import { GpxDb, getTrackPoints, listTours, seedDefaultCategories, type NewTrackPoint } from '../src/db';
 import {
   ELEVATION_THRESHOLD_M,
   GpxError,
@@ -10,7 +10,6 @@ import {
   parseGpx,
   prepareImport,
   saveDraft,
-  type NewTrackPoint,
 } from '../src/gpx';
 
 const GPX_NS = 'xmlns="http://www.topografix.com/GPX/1/1"';
