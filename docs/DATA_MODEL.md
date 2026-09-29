@@ -20,6 +20,8 @@ Zeiten: Unix-Millisekunden UTC. Tourdatum `date`: "YYYY-MM-DD".
 - Eine Tour braucht eine existierende Kategorie. Tour, Trackpunkte und Waypoints werden in einer Transaktion geschrieben (ganz oder gar nicht).
 - Tour löschen entfernt Trackpunkte, Waypoints und Fotos mit.
 - Höchstens 3 Fotos pro Tour.
+- Manuelle Touren (`source: 'manual'`) haben keine Trackpunkte, `startTime`/`endTime` sind `null`; `startPoint`/`endPoint` sind gleich dem optional angegebenen Ort. Distanz, Dauer und Ort sind nur bei ihnen änderbar (`updateTourDetails`).
+- Listen sortieren nach `date` absteigend, dann `startTime` absteigend.
 - `createdAt` einer Tour bleibt bei Änderungen unverändert, `updatedAt` wird bei jeder Änderung gesetzt.
 
 ## Noch nicht umgesetzt

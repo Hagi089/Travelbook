@@ -32,3 +32,11 @@ label input[type=text], label input[type=date], label select, label textarea { d
 label.radio { color: var(--fg); font-size: 16px; }
 .card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin: 12px 0; }
 .status { margin: 8px 0; }
+.tour-list { margin-top: 8px; }
+.tour-item { display: flex; align-items: center; gap: 12px; width: 100%; margin: 6px 0; padding: 10px 12px; text-align: left; }
+.tour-text { display: flex; flex-direction: column; min-width: 0; }
+.cat-edit input[type=text] { flex: 1; min-width: 0; padding: 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+.cat-edit input[type=color] { width: 44px; height: 40px; padding: 2px; border: 1px solid var(--line); border-radius: 8px; background: none; }
+.delete-prompt { margin-top: 8px; }
+.delete-prompt select, .row select { padding: 8px; font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; }
+.row select { flex: 1; min-width: 0; }

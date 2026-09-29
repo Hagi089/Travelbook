@@ -1,8 +1,11 @@
+import type { GpxDb } from '../db-api';
 import { getMapMode, setMapMode } from '../map/mapMode';
 import { OFFLINE_MAPS_AVAILABLE, ONLINE_OSM } from '../map/tileSource';
+import { createCategoriesPanel } from './categoriesPanel';
 import { h, type View } from './dom';
 
-export function createSettingsView(): View {
+export function createSettingsView(db: GpxDb): View {
+  const categories = createCategoriesPanel(db);
   const el = h('section', { class: 'view scroll', hidden: '' });
 
   function render(): void {
@@ -23,9 +26,17 @@ export function createSettingsView(): View {
       h('label', { class: 'radio' }, online, ` Online-Karte (${ONLINE_OSM.label})`),
       h('label', { class: 'radio' }, offline, OFFLINE_MAPS_AVAILABLE ? ' Offline-Karte' : ' Offline-Karte (noch nicht verfügbar)'),
       h('p', { class: 'muted' }, 'Die Online-Karte braucht eine Internetverbindung, um den Kartenhintergrund zu laden. Touren, Notizen und Fotos liegen immer lokal auf dem Gerät.'),
+      h('h3', {}, 'Kategorien'),
+      categories.el,
     );
   }
   render();
 
-  return { el, onShow: render };
+  return {
+    el,
+    async onShow() {
+      render();
+      await categories.refresh();
+    },
+  };
 }

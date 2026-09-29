@@ -3,14 +3,16 @@ import { h, type View } from './dom';
 import { createImportView } from './importView';
 import { createMapView } from './mapView';
 import { createSettingsView } from './settingsView';
+import { createToursView } from './toursView';
 
 export function startApp(root: HTMLElement, db: GpxDb): void {
   const views: Record<string, View> = {
     map: createMapView(db),
+    tours: createToursView(db),
     import: createImportView(db, () => undefined),
-    settings: createSettingsView(),
+    settings: createSettingsView(db),
   };
-  const labels: Record<string, string> = { map: 'Karte', import: 'Import', settings: 'Einstellungen' };
+  const labels: Record<string, string> = { map: 'Karte', tours: 'Touren', import: 'Import', settings: 'Einstellungen' };
   const nav = h('nav', { class: 'nav' });
   const buttons: Record<string, HTMLButtonElement> = {};
 

@@ -1,4 +1,4 @@
-import { latLngBounds, map as createMap, polyline, tileLayer, type LatLngBounds, type Map as LMap, type Polyline, type TileLayer } from 'leaflet';
+import { circleMarker, latLngBounds, map as createMap, polyline, tileLayer, type LatLngBounds, type Map as LMap, type Path, type TileLayer } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { deleteTour, exportGpx, getTrackPoints, listCategories, listTours, type Category, type GpxDb, type Tour } from '../db-api';
 import { getMapMode } from '../map/mapMode';
@@ -26,7 +26,7 @@ export function createMapView(db: GpxDb): View {
 
   let map: LMap | null = null;
   let tiles: TileLayer | null = null;
-  let lines: Array<{ tour: Tour; line: Polyline }> = [];
+  let lines: Array<{ tour: Tour; line: Path }> = [];
   let categoryFilter: string | null = null;
   let selectedId: string | null = null;
   let token = 0;
@@ -117,12 +117,25 @@ export function createMapView(db: GpxDb): View {
     lines = [];
     let bounds: LatLngBounds | null = null;
     for (const { tour, segments } of loaded) {
-      if (segments.length === 0) continue;
       const color = categories.find((c) => c.id === tour.categoryId)?.color ?? '#555555';
-      const line = polyline(segments, { color, weight: 4, opacity: 0.8 }).addTo(map);
-      line.on('click', () => select(tour));
-      lines.push({ tour, line });
-      bounds = bounds ? bounds.extend(line.getBounds()) : latLngBounds(line.getBounds().getSouthWest(), line.getBounds().getNorthEast());
+      let shape: Path;
+      let shapeBounds: LatLngBounds;
+      if (segments.length > 0) {
+        const pl = polyline(segments, { color, weight: 4, opacity: 0.8 });
+        shape = pl;
+        shapeBounds = pl.getBounds();
+      } else if (tour.startPoint) {
+        // Manuell angelegte Tour ohne Track: nur ein Punkt am angegebenen Ort.
+        const at: [number, number] = [tour.startPoint.lat, tour.startPoint.lon];
+        shape = circleMarker(at, { radius: 9, color, weight: 3, fillColor: color, fillOpacity: 0.7 });
+        shapeBounds = latLngBounds([at, at]);
+      } else {
+        continue;
+      }
+      shape.addTo(map);
+      shape.on('click', () => select(tour));
+      lines.push({ tour, line: shape });
+      bounds = bounds ? bounds.extend(shapeBounds) : latLngBounds(shapeBounds.getSouthWest(), shapeBounds.getNorthEast());
     }
     if (bounds) map.fitBounds(bounds, { padding: [24, 24] });
     const stillSelected = tours.find((t) => t.id === selectedId) ?? null;
