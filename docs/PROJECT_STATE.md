@@ -57,12 +57,26 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 ## Aktuell in Arbeit
 - Nichts offen im Code. Wartet auf Gerätetests und Sichtprüfung der neuen Oberfläche durch den Nutzer.
 
-## Nächste Schritte
-1. Gerätetests durch den Nutzer nach der Anleitung in `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart). Ergebnisse dort eintragen; danach Fehler beheben oder ADR-001-Fallback (Transistorsoft) bewerten.
-2. Danach Phase 6 (Fotos/Notizen/Detail). Vorher klären: GPX-Export unter Android (Download funktioniert in der WebView vermutlich nicht), Live-Distanz in der Aufnahme.
+## CI / GitHub Actions (29.09.2026)
+- Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
+- Runner auf `ubuntu-24.04` festgesetzt, weil `ubuntu-latest` am 19.10.2026 auf Ubuntu 26 wechselt. Umstellung später bewusst vornehmen und Build dabei prüfen.
+- `android.yml` löst zusätzlich bei Änderungen an `src/**`, `index.html`, `public/**`, `package.json`, `capacitor.config.json` und am Workflow selbst aus (die APK enthält die Web-Oberfläche).
+
+## Aktuell in Arbeit
+- Nichts offen im Code. Wartet auf Gerätetests und Sichtprüfung der neuen Oberfläche durch den Nutzer.
+
+## Nächste Schritte in Reihenfolge
+1. Nutzer: neueste APK (Artifact `travelbook-debug-apk` des letzten grünen Laufs „Android Debug APK“) installieren, neue Oberfläche prüfen (Dunkelmodus, Navigationsleiste bei schmalem Display, Zurück-Taste).
+2. Nutzer: Gerätetests nach `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart); Ergebnisse dort eintragen.
+3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
+4. Vor Phase 6 klären und beheben: GPX-Export unter Android (Download in der WebView), Live-Distanz in der Aufnahme, laufende/unterbrochene Aufnahme nicht als 0-km-Tour in Liste und Dashboard.
+5. Phase 6: Fotos, Notizen, Detailansicht.
+6. Phase 7: Suche, Filter, Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
+7. Phase 9: unabhängiger Testdurchlauf.
+8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
 
 ## Bekannte Probleme
-- Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
+- Keine bekannten Fehler; offene Unsicherheiten siehe oben (Gerätetests fehlen).
 
 ## Arbeitsumgebung (für neue Chats)
 - In der Claude-Entwicklungsumgebung ist npm blockiert (403): Tests, Typprüfung und Build laufen dort nicht. Nachweis ist ausschließlich der GitHub-Actions-Lauf nach dem Push.
