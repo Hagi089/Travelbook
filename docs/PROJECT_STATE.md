@@ -38,7 +38,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - `src/tracking/webFallback.ts`: Browser-Fallback mit `watchPosition`, meldet `backgroundCapable: false`. `src/tracking/plugin.ts`: wählt unter Capacitor das native Plugin `Tracking`, sonst den Fallback (neue Abhängigkeit `@capacitor/core`).
 - `src/ui/recordView.ts`: neuer Tab „Aufnahme“ (Name, Kategorie, Genauigkeitsprofil, Start/Pause/Beenden, Zeit und Punktezahl, Hinweis bei fehlender Hintergrundfähigkeit). Übernahme der Punkte alle 10 s und bei Rückkehr in die App.
 - Tests: `tests/tracking.test.ts` (simulierter nativer Puffer: Idempotenz nach fehlgeschlagener Bestätigung, gleichzeitige Aufrufe, Segmente, Wiederherstellung, Web-Fallback).
-- Bekannt/bewusst: Eine laufende oder unterbrochene Aufnahme ist eine Tour mit Quelle `recording` ohne Endzeit und erscheint bis zum Abschluss in Liste und Dashboard (0 km). Live-Distanz wird noch nicht angezeigt (nur Zeit und Punktezahl).
+- Bekannt/bewusst: Eine laufende oder unterbrochene Aufnahme ist eine Tour mit Quelle `recording` ohne Endzeit; sie wird in Liste, Karte und Dashboard ausgeblendet (siehe „Vorarbeiten vor Phase 6“).
 - Unsicherheit: Die Profile (Intervall/Distanz/Priorität) sind noch nicht festgelegt oder gemessen; das Kotlin-Plugin setzt sie in 5b, die Werte müssen an echten Geräten geprüft werden.
 
 ## Phase 5b: Android (implementiert; CI baut die Debug-APK, auf keinem Gerät getestet)
@@ -59,8 +59,15 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Befund: GPS-Erhebung im Profil „Normal“ zu gering. Ursache im Code: `TrackingService.startUpdates` verwendete für „normal“ 5 s Intervall / 5 m Mindestdistanz (Annahme, nie gemessen). Geändert: Normal 2 s / 3 m, Hoch 1 s / 0 m; „Akku sparen“ unverändert. Nur die Kotlin-Datei betroffen (Web-Fallback ignoriert die Frequenz, Datenmodell und Schnittstelle unverändert).
 - Unsicherheit: Ob „zu gering“ die Punktedichte oder die Positionsgenauigkeit (Fehler in m) meint, ist nicht geklärt; die Änderung adressiert die Punktedichte. Neue Werte sind Annahmen und am Gerät zu prüfen (Punktezahl/Kilometer, Rauschen im Stand, Akku). Falls die Positionsgenauigkeit gemeint ist: nächster Schritt wäre ein Filter auf `accuracy` (z. B. Punkte > 30 m verwerfen) bzw. `setWaitForAccurateLocation`.
 
+- Vom Nutzer bestätigt (29.09.2026): Normal 2 s / 3 m passt.
+
+## Vorarbeiten vor Phase 6 (29.09.2026, Schritt 4 der Liste; per CI zu bestätigen, auf dem Gerät ungetestet)
+- Laufende/unterbrochene Aufnahmen (Quelle `recording`, keine Endzeit) erscheinen nicht mehr in Datenliste, Karte und Dashboard: `listTours` blendet sie standardmäßig aus (`includeOpenRecordings: true` zeigt sie). Wiederherstellung (`recoverRecordings`) nutzt `db.tours` direkt und ist nicht betroffen. Test in `tests/tracking.test.ts`.
+- Live-Distanz: Aufnahmeansicht zeigt „Strecke“ (`computeStats` über die übernommenen Punkte, Aktualisierung alle 10 s und bei Rückkehr in die App; neuester Punkt kann bis zu 10 s fehlen).
+- GPX-Export unter Android: `src/ui/download.ts` schreibt die Datei mit `@capacitor/filesystem` in den App-Cache und öffnet das Android-Teilen-Menü (`@capacitor/share`); im Browser bleibt der normale Download. Neue Abhängigkeiten `@capacitor/filesystem ^8.1.3`, `@capacitor/share ^8.0.2` (Versionen per npm-Registry geprüft, peer `@capacitor/core >=8`). Unsicherheit: Verhalten auf dem Gerät (Teilen-Menü, Dateiname, „Speichern unter“) nicht getestet; kein `package-lock.json` im Repository.
+
 ## Aktuell in Arbeit
-- Verdichtung Profil „Normal“ wartet auf erneuten Gerätetest (neue APK aus dem CI-Lauf nach diesem Commit).
+- Nichts offen im Code. Wartet auf CI-Lauf und Gerätetest der drei Vorarbeiten, danach Phase 6.
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -74,7 +81,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 1. Nutzer: neueste APK (Artifact `travelbook-debug-apk` des letzten grünen Laufs „Android Debug APK“) installieren, neue Oberfläche prüfen (Dunkelmodus, Navigationsleiste bei schmalem Display, Zurück-Taste).
 2. Nutzer: Gerätetests nach `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart); Ergebnisse dort eintragen.
 3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
-4. Vor Phase 6 klären und beheben: GPX-Export unter Android (Download in der WebView), Live-Distanz in der Aufnahme, laufende/unterbrochene Aufnahme nicht als 0-km-Tour in Liste und Dashboard.
+4. Vor Phase 6 (umgesetzt, Gerätetest offen): GPX-Export unter Android, Live-Distanz, laufende Aufnahme nicht als 0-km-Tour.
 5. Phase 6: Fotos, Notizen, Detailansicht.
 6. Phase 7: Suche, Filter, Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
 7. Phase 9: unabhängiger Testdurchlauf.
@@ -92,7 +99,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 ## Temporäre Lösungen (später zurückbauen)
 - Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
 - Dialoge: `window.confirm` beim Löschen (später durch M3-Dialog ersetzen).
-- Export per Browser-Download; unter Android (Capacitor) durch Datei-Speichern/Teilen ersetzen (Funktion in der WebView ungeprüft, vermutlich eingeschränkt).
+- Export unter Android: Teilen-Menü statt „Speichern unter“ (Cache-Datei); ggf. später direkter Speicherort-Dialog.
 - Feste Debug-Signatur im Repository (`android/app/debug.keystore`); vor einer Veröffentlichung durch einen Release-Schlüssel ersetzen.
 
 ## Offene Entscheidungen

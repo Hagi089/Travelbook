@@ -1,4 +1,5 @@
-import { listCategories, type GpxDb } from '../db-api';
+import { getTrackPoints, listCategories, type GpxDb } from '../db-api';
+import { computeStats } from '../gpx/stats';
 import { finishRecording, ingestPending, recoverRecordings, startRecording } from '../tracking/recorder';
 import { TRACKING_PROFILES, type TrackingPlugin, type TrackingProfile, type TrackingStatus } from '../tracking/types';
 import { h, type View } from './dom';
@@ -21,6 +22,8 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, hooks: Recor
   let clock: ReturnType<typeof setInterval> | null = null;
   let sync: ReturnType<typeof setInterval> | null = null;
   let elapsedEl: HTMLElement | null = null;
+  /** Bisher zurückgelegte Strecke der laufenden Aufnahme (aus den übernommenen Punkten, aktualisiert mit jedem Abgleich). */
+  let liveDistanceM = 0;
 
   function stopTimers(): void {
     if (clock) clearInterval(clock);
@@ -37,6 +40,9 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, hooks: Recor
     if (status.state !== 'idle' && status.recordingId) {
       await ingestPending(db, plugin, status.recordingId);
       status = await plugin.getStatus();
+      liveDistanceM = computeStats(await getTrackPoints(db, status.recordingId ?? '')).distanceM;
+    } else {
+      liveDistanceM = 0;
     }
   }
 
@@ -104,6 +110,7 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, hooks: Recor
       { class: 'card' },
       h('div', {}, s.state === 'paused' ? 'Pausiert' : 'Aufnahme läuft'),
       h('div', { class: 'muted' }, 'Zeit seit Start: ', elapsedEl),
+      h('div', { class: 'muted' }, `Strecke: ${formatDistance(liveDistanceM)}`),
       h('div', { class: 'muted' }, `${s.pointCount} Punkte aufgezeichnet`),
       h('div', { class: 'actions' }, pause, stop),
     );

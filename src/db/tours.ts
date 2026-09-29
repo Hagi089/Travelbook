@@ -34,12 +34,15 @@ export interface TourFilter {
   /** Inklusive, Format "YYYY-MM-DD". */
   fromDate?: string;
   toDate?: string;
+  /** Standard false: Laufende/unterbrochene Aufnahmen (Quelle "recording" ohne Endzeit) erscheinen nicht in Listen, Karte und Dashboard. */
+  includeOpenRecordings?: boolean;
 }
 
 /** Neueste zuerst: nach Datum, bei gleichem Datum nach Startzeit (manuelle Touren ohne Startzeit gelten als 0). */
 export async function listTours(db: GpxDb, filter: TourFilter = {}): Promise<Tour[]> {
   const base = filter.categoryId ? db.tours.where('categoryId').equals(filter.categoryId) : db.tours.toCollection();
   const tours = await base
+    .filter((t) => filter.includeOpenRecordings || !(t.source === 'recording' && t.endTime === null))
     .filter((t) => (!filter.fromDate || t.date >= filter.fromDate) && (!filter.toDate || t.date <= filter.toDate))
     .toArray();
   return tours.sort((a, b) => b.date.localeCompare(a.date) || (b.startTime ?? 0) - (a.startTime ?? 0));

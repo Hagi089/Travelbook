@@ -156,7 +156,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
         try {
           const points = await getTrackPoints(db, tour.id);
           const waypoints = await db.waypoints.where('tourId').equals(tour.id).toArray();
-          downloadText(`${tour.name.replace(/[^\p{L}\p{N}_-]+/gu, '_') || 'tour'}.gpx`, exportGpx({ name: tour.name, notes: tour.notes, points, waypoints }));
+          await downloadText(`${tour.name.replace(/[^\p{L}\p{N}_-]+/gu, '_') || 'tour'}.gpx`, exportGpx({ name: tour.name, notes: tour.notes, points, waypoints }));
         } catch (e) {
           msg.textContent = errorText(e);
         }

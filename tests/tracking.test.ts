@@ -107,6 +107,18 @@ describe('Aufnahme starten', () => {
     expect(await listTours(db)).toHaveLength(0);
   });
 
+  it('blendet laufende Aufnahmen in listTours aus, bis sie beendet sind', async () => {
+    const native = new FakeNative();
+    const tour = await startRecording(db, native, { name: 'Läuft', categoryId: 'default-wandern', profile: 'normal' });
+    expect(await listTours(db)).toHaveLength(0);
+    expect(await listTours(db, { categoryId: 'default-wandern' })).toHaveLength(0);
+    expect((await listTours(db, { includeOpenRecordings: true })).map((t) => t.id)).toEqual([tour.id]);
+    native.fix(48.1, 11.5, 1_000);
+    native.fix(48.1005, 11.5005, 6_000);
+    await finishRecording(db, native, tour.id);
+    expect((await listTours(db)).map((t) => t.id)).toEqual([tour.id]);
+  });
+
   it('lehnt eine unbekannte Kategorie ab, ohne das Plugin zu starten', async () => {
     const native = new FakeNative();
     await expect(startRecording(db, native, { name: 'X', categoryId: 'gibt-es-nicht', profile: 'normal' })).rejects.toThrow('Kategorie');

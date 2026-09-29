@@ -22,7 +22,9 @@ Stand 29.09.2026: `npm test` (Vitest) und `npm run build` (Typprüfung) laufen i
 | 6 | Aufnahme beenden | Tour gespeichert mit Distanz/Dauer; Karte zeigt Track | |
 | 7 | Berechtigung Standort verweigern | Verständliche Meldung, keine Aufnahme, keine Geister-Tour | |
 | 8 | Flugmodus während der Aufnahme | GPS-Punkte kommen weiter (nur Karte braucht Internet) | |
-| 9 | Tour in „Daten“ öffnen → GPX exportieren (Android) | Datei wird gespeichert/teilbar (erwartet: evtl. fehlerhaft, bekannt) | |
+| 9 | Tour in „Daten“ öffnen → GPX exportieren (Android) | Android-Teilen-Menü öffnet sich (Datei `<Name>.gpx`), Speichern/Teilen möglich; Abbrechen zeigt keinen Fehler | |
+| 10 | Während der Aufnahme: „Strecke“ in der Aufnahmeansicht | Wert steigt, passt grob zur gegangenen Strecke | |
+| 11 | Während der Aufnahme: Datenliste, Karte, Dashboard ansehen | Laufende Aufnahme erscheint dort nicht (Banner „Aufnahme läuft“ bleibt) | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |
