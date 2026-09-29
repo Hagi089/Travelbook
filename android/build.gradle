@@ -1,0 +1,24 @@
+// Zielversionen laut Capacitor-8-Anleitung (bestätigt 29.09.2026): AGP 8.13.0, Kotlin 2.2.20.
+buildscript {
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.13.0'
+        classpath 'org.jetbrains.kotlin:kotlin-gradle-plugin:2.2.20'
+    }
+}
+
+apply from: "variables.gradle"
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+tasks.register('clean', Delete) {
+    delete rootProject.layout.buildDirectory
+}

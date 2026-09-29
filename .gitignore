@@ -5,3 +5,13 @@ android/.gradle/
 android/local.properties
 *.log
 .DS_Store
+
+# Von "npx cap sync android" erzeugt (nicht einchecken)
+android/capacitor.settings.gradle
+android/app/capacitor.build.gradle
+android/capacitor-cordova-android-plugins/
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json
+android/app/build/
+android/.idea/
