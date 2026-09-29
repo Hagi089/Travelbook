@@ -44,7 +44,8 @@ h3 { margin: 0 0 4px; font-size: 18px; }
 .row { display: flex; gap: 8px; margin-top: 8px; }
 .toolbar { display: flex; gap: 8px; margin-bottom: 8px; }
 .toolbar select { flex: 1; min-width: 0; }
-.actions { margin-top: 16px; }
+.actions { margin-top: 16px; flex-wrap: wrap; }
+.actions button { white-space: nowrap; }
 button { font: inherit; padding: 10px 16px; border-radius: 10px; border: 1px solid var(--line); background: var(--surface); color: var(--fg); }
 button.primary { background: var(--accent); color: var(--accent-fg); border-color: var(--accent); font-weight: 600; }
 button.danger { color: var(--danger); }
@@ -107,3 +108,5 @@ h4 { margin: 16px 0 4px; font-size: 15px; }
 .ranking li:first-child { border-top: 0; }
 .ranking li::before { content: counter(rank); position: absolute; left: 0; top: 8px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
 .rank-name { font-weight: 600; }
+.detail-meta { display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+.page > div > button.ghost:first-child { margin-left: -10px; }

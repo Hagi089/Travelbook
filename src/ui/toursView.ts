@@ -2,6 +2,9 @@ import {
   buildLocation,
   createManualTour,
   deleteTour,
+  exportGpx,
+  getTour,
+  getTrackPoints,
   listCategories,
   listTours,
   localDateString,
@@ -12,14 +15,21 @@ import {
   type Tour,
 } from '../db-api';
 import { h, type View } from './dom';
-import { formatDate, formatDistance, formatDuration, formatElevation } from './format';
+import { downloadText } from './download';
+import { formatDate, formatDistance, formatDuration, formatElevation, formatSpeed } from './format';
+import { kpi } from './kpi';
 
 function errorText(e: unknown): string {
   return e instanceof Error ? e.message : String(e);
 }
 
-/** Tourenliste mit Kategorienfilter, manuellem Anlegen und Bearbeiten (Name, Kategorie, Datum, Notizen). */
-export function createToursView(db: GpxDb): View {
+export interface ToursView extends View {
+  /** Öffnet die Details einer Tour. `back` wird beim Verlassen der Details aufgerufen (z. B. Rückkehr zur Karte); ohne `back` geht es zurück zur Liste. */
+  openTour(id: string, back?: () => void): Promise<void>;
+}
+
+/** Datenliste mit Kategorienfilter, Detailansicht, manuellem Anlegen und Bearbeiten (Name, Kategorie, Datum, Notizen). */
+export function createToursView(db: GpxDb): ToursView {
   const filter = h('select', { 'aria-label': 'Kategorie filtern' });
   const newBtn = h('button', { type: 'button', class: 'primary' }, '+ Neue Tour');
   const list = h('div', { class: 'tour-list' });
@@ -29,6 +39,16 @@ export function createToursView(db: GpxDb): View {
 
   let categories: Category[] = [];
   let filterId = '';
+  /** Gesetzt, wenn die Details von außen (Karte) geöffnet wurden: „Zurück“ führt dann dorthin statt zur Liste. */
+  let returnTo: (() => void) | null = null;
+
+  /** Verlässt die Detailansicht: zurück zum Aufrufer (Karte) oder zur Liste. */
+  function leaveDetail(): void {
+    const back = returnTo;
+    returnTo = null;
+    if (back) back();
+    else showList();
+  }
 
   function showList(): void {
     editorPane.hidden = true;
@@ -36,7 +56,7 @@ export function createToursView(db: GpxDb): View {
     listPane.hidden = false;
   }
 
-  function showEditor(node: HTMLElement): void {
+  function showPane(node: HTMLElement): void {
     listPane.hidden = true;
     editorPane.replaceChildren(node);
     editorPane.hidden = false;
@@ -66,7 +86,7 @@ export function createToursView(db: GpxDb): View {
       msg.textContent = 'Es gibt keine Kategorie. Lege zuerst unter „Einstellungen“ eine Kategorie an.';
     }
 
-    back.addEventListener('click', showList);
+    back.addEventListener('click', () => (tour ? void showDetail(tour.id) : showList()));
 
     save.addEventListener('click', async () => {
       save.disabled = true;
@@ -85,27 +105,13 @@ export function createToursView(db: GpxDb): View {
           await updateTourDetails(db, tour.id, { name: name.value, categoryId: category.value, date: date.value, notes: notes.value });
         }
         await refresh();
-        showList();
+        if (tour) await showDetail(tour.id);
+        else showList();
       } catch (e) {
         msg.textContent = errorText(e);
         save.disabled = false;
       }
     });
-
-    if (tour) {
-      const del = h('button', { type: 'button', class: 'danger ghost' }, 'Löschen');
-      del.addEventListener('click', async () => {
-        if (!window.confirm(`Tour "${tour.name}" wirklich löschen?`)) return;
-        try {
-          await deleteTour(db, tour.id);
-          await refresh();
-          showList();
-        } catch (e) {
-          msg.textContent = errorText(e);
-        }
-      });
-      buttons.append(del);
-    }
 
     return h(
       'div',
@@ -126,13 +132,84 @@ export function createToursView(db: GpxDb): View {
     );
   }
 
+  /** Nur lesende Detailansicht einer Tour mit Kennzahlen, Notizen und Aktionen. */
+  function detail(tour: Tour): HTMLElement {
+    const cat = categories.find((c) => c.id === tour.categoryId);
+    const isManual = tour.source === 'manual';
+    const back = h('button', { type: 'button', class: 'ghost' }, '← Zurück');
+    const edit = h('button', { type: 'button', class: 'primary' }, 'Bearbeiten');
+    const actions = h('div', { class: 'row actions' }, edit);
+    const msg = h('div', { class: 'status error', role: 'status' });
+
+    back.addEventListener('click', leaveDetail);
+    edit.addEventListener('click', () => showPane(editor(tour)));
+
+    if (!isManual) {
+      const exportBtn = h('button', { type: 'button' }, 'GPX exportieren');
+      exportBtn.addEventListener('click', async () => {
+        try {
+          const points = await getTrackPoints(db, tour.id);
+          const waypoints = await db.waypoints.where('tourId').equals(tour.id).toArray();
+          downloadText(`${tour.name.replace(/[^\p{L}\p{N}_-]+/gu, '_') || 'tour'}.gpx`, exportGpx({ name: tour.name, notes: tour.notes, points, waypoints }));
+        } catch (e) {
+          msg.textContent = errorText(e);
+        }
+      });
+      actions.append(exportBtn);
+    }
+    const del = h('button', { type: 'button', class: 'danger ghost' }, 'Löschen');
+    del.addEventListener('click', async () => {
+      if (!window.confirm(`Tour "${tour.name}" wirklich löschen?`)) return;
+      try {
+        await deleteTour(db, tour.id);
+        await refresh();
+        leaveDetail();
+      } catch (e) {
+        msg.textContent = errorText(e);
+      }
+    });
+    actions.append(del);
+
+    const kpis: HTMLElement[] = [];
+    if (!isManual) {
+      kpis.push(kpi('Distanz', formatDistance(tour.distanceM)), kpi('Dauer', formatDuration(tour.durationSec)), kpi('Aufstieg', formatElevation(tour.ascentM)), kpi('Abstieg', formatElevation(tour.descentM)), kpi('Ø Geschwindigkeit', formatSpeed(tour.avgSpeedMs)), kpi('Höchstgeschwindigkeit', formatSpeed(tour.maxSpeedMs)));
+    } else {
+      if (tour.distanceM > 0) kpis.push(kpi('Distanz', formatDistance(tour.distanceM)));
+      if (tour.durationSec > 0) kpis.push(kpi('Dauer', formatDuration(tour.durationSec)));
+    }
+
+    return h(
+      'div',
+      {},
+      back,
+      h('h2', {}, tour.name),
+      h('div', { class: 'detail-meta' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'muted' }, `${cat?.name ?? 'Ohne Kategorie'} · ${formatDate(tour.date)}${isManual ? ' · manuell angelegt' : ''}`)),
+      kpis.length > 0 ? h('div', { class: 'kpis' }, ...kpis) : null,
+      tour.startPoint && isManual ? h('div', { class: 'muted' }, `Ort: ${tour.startPoint.lat.toFixed(5)}, ${tour.startPoint.lon.toFixed(5)}`) : null,
+      h('h4', {}, 'Notizen'),
+      tour.notes ? h('div', { class: 'notes' }, tour.notes) : h('p', { class: 'muted' }, 'Keine Notizen.'),
+      actions,
+      msg,
+    );
+  }
+
+  async function showDetail(id: string): Promise<void> {
+    const tour = await getTour(db, id);
+    if (!tour) {
+      leaveDetail();
+      return;
+    }
+    if (categories.length === 0) categories = await listCategories(db);
+    showPane(detail(tour));
+  }
+
   function item(tour: Tour): HTMLElement {
     const cat = categories.find((c) => c.id === tour.categoryId);
     const meta = [formatDate(tour.date), cat?.name ?? 'Ohne Kategorie', tour.distanceM > 0 ? formatDistance(tour.distanceM) : null, tour.source === 'manual' ? 'manuell' : null]
       .filter((x): x is string => x !== null)
       .join(' · ');
     const b = h('button', { type: 'button', class: 'tour-item' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'tour-text' }, h('strong', {}, tour.name), h('span', { class: 'muted small' }, meta)));
-    b.addEventListener('click', () => showEditor(editor(tour)));
+    b.addEventListener('click', () => void showDetail(tour.id));
     return b;
   }
 
@@ -150,13 +227,18 @@ export function createToursView(db: GpxDb): View {
     void refresh();
   });
 
-  newBtn.addEventListener('click', () => showEditor(editor(null)));
+  newBtn.addEventListener('click', () => showPane(editor(null)));
 
   return {
     el,
     async onShow() {
+      returnTo = null;
       showList();
       await refresh();
+    },
+    async openTour(id, back) {
+      returnTo = back ?? null;
+      await showDetail(id);
     },
   };
 }

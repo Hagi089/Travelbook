@@ -2,10 +2,7 @@ import { listCategories, listTours, type Category, type GpxDb, type Tour } from 
 import { activityTotals, DASHBOARD_CATEGORY_IDS, placeStats } from '../dashboard/stats';
 import { h, type View } from './dom';
 import { formatDate, formatDuration, formatInt, formatKm } from './format';
-
-function kpi(label: string, value: string): HTMLElement {
-  return h('div', { class: 'kpi' }, h('div', { class: 'kpi-value' }, value), h('div', { class: 'kpi-label' }, label));
-}
+import { kpi } from './kpi';
 
 function missing(title: string): HTMLElement {
   return h('section', { class: 'settings-section' }, h('h3', {}, title), h('p', { class: 'muted' }, 'Die zugehörige Standardkategorie existiert nicht mehr. Lege unter „Einstellungen“ eine Kategorie mit diesem Namen an und ordne Touren zu, um dieses Dashboard zu nutzen.'));

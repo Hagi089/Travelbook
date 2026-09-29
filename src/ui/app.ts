@@ -7,9 +7,15 @@ import { createSettingsView } from './settingsView';
 import { createToursView } from './toursView';
 
 export function startApp(root: HTMLElement, db: GpxDb): void {
+  const toursView = createToursView(db);
+  /** Klick auf eine Tour in der Karte: Details im Bereich „Daten“ öffnen; „Zurück“ führt wieder zur Karte. */
+  async function openTourFromMap(id: string): Promise<void> {
+    await show('tours');
+    await toursView.openTour(id, () => void show('map'));
+  }
   const views: Record<string, View> = {
-    map: createMapView(db),
-    tours: createToursView(db),
+    map: createMapView(db, (id) => void openTourFromMap(id)),
+    tours: toursView,
     dashboard: createDashboardView(db),
     import: createImportView(db, () => undefined),
     settings: createSettingsView(db),
