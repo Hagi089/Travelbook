@@ -74,3 +74,31 @@ Hinweis: Ein „bestehendes eigenes Kotlin-Plugin“ existiert noch nicht. Vergl
 - Phase 5 wird vorgezogen (nach Phase 3), da Kernrisiko.
 - **Verifikation (Pflicht vor „fertig“):** Gerätetest mit gesperrtem Display, mindestens 2 h, auf mindestens zwei Herstellern, mit App-Kill und Neustart-Szenario; Ergebnisse in `TEST_REPORT.md`. Besteht das Plugin nicht → Fallback Transistorsoft neu bewerten.
 - Offen: Capacitor-Zielversion und Android-`targetSdk` vor Phase 1 gegen aktuelle Doku bestätigen.
+
+---
+
+# ADR-002: Kartenquelle – Online zuerst, Offline vorbereitet
+Status: entschieden am 29.09.2026 (Vorgabe des Nutzers: erst einfach und schnell, Offline ist später wichtig, nichts verbauen).
+
+## Problem
+Die Weltkarte braucht Kartenkacheln. Echte Offline-Karten sind aufwendig (Quelle, Lizenz, Speicherplatz, Downloadverwaltung).
+
+## Lösungen
+1. Sofort Offline-Karten bauen – aufwendig, verzögert die restliche App.
+2. Nur Online-Kacheln, fest im Code – schnell, aber später schwer umzubauen.
+3. **Online-Kacheln hinter einer Kartenquellen-Schicht** mit Modus-Schalter (gewählt).
+
+## Entscheidung und Begründung
+Variante 3: Die Oberfläche fragt nur `getTileSource(mode)` (`src/map/tileSource.ts`). Aktuell gibt es dort nur die OSM-Online-Quelle; der Modus „offline“ liefert `null` und ist in den Einstellungen deaktiviert (`OFFLINE_MAPS_AVAILABLE = false`). Die App zeigt auf der Karte und in den Einstellungen ausdrücklich, dass eine Internetverbindung nötig ist.
+
+## Rückbau-Liste bei Umstellung auf Offline (alle Stellen im Code mit `TEMP-ONLINE-MAP` markiert; `grep -rn TEMP-ONLINE-MAP src`)
+1. `src/map/tileSource.ts`: Offline-Quelle ergänzen, `getTileSource('offline')` implementieren, `OFFLINE_MAPS_AVAILABLE = true`; `ONLINE_OSM` nur behalten, wenn Online weiterhin wählbar sein soll.
+2. `src/ui/onlineNotice.ts` und deren Verwendung in `src/ui/mapView.ts` entfernen bzw. auf „Online-Modus“ beschränken.
+3. `src/ui/settingsView.ts`: Deaktivierung der Offline-Auswahl und den Hinweistext „noch nicht verfügbar“ entfernen.
+4. Test `tests/ui-helpers.test.ts` („liefert online die OSM-Quelle und offline (noch) keine“) anpassen.
+5. Service Worker/Offline-Caching der Kacheln neu bewerten (OSM-Standardkacheln dürfen nicht massenhaft vorgeladen werden).
+
+## Auswirkungen
+- Die Karte zeigt ohne Internet keinen Hintergrund; Tracks und alle lokalen Daten bleiben sichtbar.
+- Risiko: OSM-Standardkacheln sind nur für moderate Nutzung vorgesehen (Nutzungsrichtlinie der OSM Foundation). Für den privaten Gebrauch vertretbar, für eine breitere Veröffentlichung nicht.
+- Interimslösung für viele Tracks: Übersicht dünnt Trackpunkte zur Laufzeit aus (`src/map/simplify.ts`). Vorberechnete vereinfachte Geometrie folgt später.

@@ -1,0 +1,23 @@
+function comma(n: number, digits: number): string {
+  return n.toFixed(digits).replace('.', ',');
+}
+
+export function formatDistance(m: number): string {
+  return m < 1000 ? `${Math.round(m)} m` : `${comma(m / 1000, 2)} km`;
+}
+
+export function formatDuration(sec: number): string {
+  if (!(sec > 0)) return '–';
+  const totalMin = Math.round(sec / 60);
+  const h = Math.floor(totalMin / 60);
+  const m = totalMin % 60;
+  return h > 0 ? `${h} h ${String(m).padStart(2, '0')} min` : `${m} min`;
+}
+
+export function formatSpeed(ms: number): string {
+  return ms > 0 ? `${comma(ms * 3.6, 1)} km/h` : '–';
+}
+
+export function formatElevation(m: number): string {
+  return `${Math.round(m)} m`;
+}

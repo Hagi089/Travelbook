@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 3 (GPX, Berechnungen) abgeschlossen, CI grün.
+Stand: 29.09.2026 – Phase 4a (Oberfläche mit Online-Karte) implementiert, CI-Ergebnis offen.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -15,15 +15,23 @@ Stand: 29.09.2026 – Phase 3 (GPX, Berechnungen) abgeschlossen, CI grün.
 ## Funktioniert (Phase 3, per CI bestätigt: Tests, Typprüfung, Build, Deploy)
 - Phase 3: GPX-Parser, -Export, Berechnung der Tourwerte, Import-Entwurf (`src/gpx/`, `tests/gpx.test.ts`), siehe TECHNICAL_DOCUMENTATION.md. Enthält Roundtrip-Tests (Parser/Export und Import → Datenbank → Export → Import) und einen Test mit 50.000 Punkten.
 
+## Implementiert, per CI/Gerät noch zu bestätigen
+- Phase 4a: Oberfläche (Karte, Import, Einstellungen) in `src/ui/`, Kartenquellen-Schicht in `src/map/` (ADR-002). Karte mit Leaflet und OSM-Online-Kacheln, Kategorienfilter, Tour-Auswahl mit Detailfeld, GPX-Export/Löschen, Import-Dialog mit Kontrolle vor dem Speichern, Kartenmodus-Schalter (Offline deaktiviert), Online-Hinweis.
+- Nur Hilfsfunktionen sind automatisch getestet (`tests/ui-helpers.test.ts`). Die Oberfläche selbst wurde weder gebaut noch im Browser/auf dem Handy gesehen.
+
 ## Aktuell in Arbeit
-- Nichts; Phase 4 folgt.
+- Abnahme von Phase 4a (CI, dann Test auf dem Handy).
 
 ## Nächste Schritte
-1. Phase 4: Karte (Leaflet), Kategorien-UI, Import-Dialog.
+1. Phase 4b: Kategorien-Verwaltung (anlegen, bearbeiten, löschen), Touren manuell anlegen, Notizen bearbeiten, Tourenliste.
 2. Phase 5: Native Android-GPS (Foreground Service, eigenes Kotlin-Plugin, ADR-001), Gerätetests.
 
 ## Bekannte Probleme
 - Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
+
+## Temporäre Lösungen (später zurückbauen)
+- Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
+- Export per Browser-Download; unter Android (Capacitor) später durch Datei-Speichern/Teilen ersetzen.
 
 ## Offene Entscheidungen
 - Schwellen für Höhenrauschen (3 m) und GPS-Sprung (70 m/s) an echten Tracks prüfen.
