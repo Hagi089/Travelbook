@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4a (Oberfläche mit Online-Karte) implementiert, CI-Ergebnis offen.
+Stand: 29.09.2026 – Phase 4a (Oberfläche mit Online-Karte) implementiert, CI grün, Handy-Test offen.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -15,12 +15,12 @@ Stand: 29.09.2026 – Phase 4a (Oberfläche mit Online-Karte) implementiert, CI-
 ## Funktioniert (Phase 3, per CI bestätigt: Tests, Typprüfung, Build, Deploy)
 - Phase 3: GPX-Parser, -Export, Berechnung der Tourwerte, Import-Entwurf (`src/gpx/`, `tests/gpx.test.ts`), siehe TECHNICAL_DOCUMENTATION.md. Enthält Roundtrip-Tests (Parser/Export und Import → Datenbank → Export → Import) und einen Test mit 50.000 Punkten.
 
-## Implementiert, per CI/Gerät noch zu bestätigen
+## Implementiert, CI grün (Tests, Typprüfung, Build, Deploy); im Browser/auf dem Handy noch nicht bestätigt
 - Phase 4a: Oberfläche (Karte, Import, Einstellungen) in `src/ui/`, Kartenquellen-Schicht in `src/map/` (ADR-002). Karte mit Leaflet und OSM-Online-Kacheln, Kategorienfilter, Tour-Auswahl mit Detailfeld, GPX-Export/Löschen, Import-Dialog mit Kontrolle vor dem Speichern, Kartenmodus-Schalter (Offline deaktiviert), Online-Hinweis.
-- Nur Hilfsfunktionen sind automatisch getestet (`tests/ui-helpers.test.ts`). Die Oberfläche selbst wurde weder gebaut noch im Browser/auf dem Handy gesehen.
+- Automatisch getestet sind nur Hilfsfunktionen (`tests/ui-helpers.test.ts`), nicht die Oberfläche selbst. Sie wurde noch nicht im Browser oder auf dem Handy angesehen.
 
 ## Aktuell in Arbeit
-- Abnahme von Phase 4a (CI, dann Test auf dem Handy).
+- Abnahme von Phase 4a durch Test auf dem Handy.
 
 ## Nächste Schritte
 1. Phase 4b: Kategorien-Verwaltung (anlegen, bearbeiten, löschen), Touren manuell anlegen, Notizen bearbeiten, Tourenliste.
