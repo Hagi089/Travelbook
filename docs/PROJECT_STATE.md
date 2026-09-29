@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) implementiert, CI-Ergebnis siehe unten; Phase 5b (Android/Kotlin) als Nächstes.
+Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) implementiert, CI grün; Phase 5b (Android/Kotlin) als Nächstes.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -32,7 +32,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Nicht umgesetzt (bewusst): GPX-Wegpunkte (Waypoints) einer Tour erscheinen nicht als eigene Punkte auf der Karte.
 - Nicht umgesetzt (bewusst): Ort per Kartenklick wählen, Kategorien umsortieren, Fotos in der Tourbearbeitung (Phase 6).
 
-## Phase 5a: Web-Teil der Aufnahme (implementiert, CI-Ergebnis nach dem Push prüfen; Oberfläche noch nicht im Browser bestätigt)
+## Phase 5a: Web-Teil der Aufnahme (implementiert, CI grün: Tests, Typprüfung, Build, Deploy; Oberfläche noch nicht im Browser bestätigt)
 - `src/tracking/types.ts`: Schnittstelle `TrackingPlugin` (start, pause, resume, stop, getStatus, getPendingPoints, ackPoints, checkPermissions, requestPermissions, openSettings). Recording-ID = Tour-ID; `seq` des Plugins = `seq` in `trackPoints` (macht die Übernahme idempotent).
 - `src/tracking/recorder.ts`: `startRecording` (Tour zuerst anlegen, danach Plugin starten, bei Fehler Tour zurückrollen), `ingestPending` (erst in die Datenbank schreiben, dann bestätigen; serialisiert), `finishRecording`/`finalizeRecording` (Tourwerte aus den Punkten, leere Aufnahme wird verworfen), `recoverRecordings` (Crash-Recovery beim App-Start).
 - `src/tracking/webFallback.ts`: Browser-Fallback mit `watchPosition`, meldet `backgroundCapable: false`. `src/tracking/plugin.ts`: wählt unter Capacitor das native Plugin `Tracking`, sonst den Fallback (neue Abhängigkeit `@capacitor/core`).
