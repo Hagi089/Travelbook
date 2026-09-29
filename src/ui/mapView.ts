@@ -78,7 +78,7 @@ export function createMapView(db: GpxDb): View {
         { class: 'stats' },
         `${formatDistance(tour.distanceM)} · ↑ ${formatElevation(tour.ascentM)} · ↓ ${formatElevation(tour.descentM)} · ${formatDuration(tour.durationSec)} · Ø ${formatSpeed(tour.avgSpeedMs)}`,
       ),
-      tour.notes ? h('div', { class: 'notes' }, tour.notes) : null,
+      ...(tour.notes ? [h('div', { class: 'notes' }, tour.notes)] : []),
       h('div', { class: 'row' }, exportBtn, delBtn),
     );
   }
