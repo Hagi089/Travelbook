@@ -53,7 +53,8 @@ let snackTimer: ReturnType<typeof setTimeout> | null = null;
 
 /** Kurze Rückmeldung am unteren Rand (Material 3 Snackbar), verschwindet nach einigen Sekunden. */
 export function showSnackbar(text: string, ms = 6000): void {
-  document.querySelector('.snackbar')?.remove();
+  // Nur eine frühere kurze Meldung ersetzen, nicht den stehenden Hinweis „Neue Version verfügbar“ (auch .snackbar).
+  document.querySelector('.snackbar:not(.update-notice)')?.remove();
   if (snackTimer) clearTimeout(snackTimer);
   const bar = h('div', { class: 'snackbar', role: 'status' }, text);
   document.body.append(bar);

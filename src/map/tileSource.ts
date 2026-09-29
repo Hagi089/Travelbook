@@ -28,6 +28,12 @@ export const ONLINE_OSM: TileSource = {
   requiresInternet: true,
 };
 
+/**
+ * Höchste Zoomstufe der Karte, unabhängig vom Hintergrund. Leaflet leitet sie sonst aus den Kachelebenen ab; ohne
+ * Kacheln (Offline-Weltkarte) wäre sie unbegrenzt und `fitBounds` auf einen einzelnen Punkt ergäbe Zoom „unendlich“.
+ */
+export const MAP_MAX_ZOOM = ONLINE_OSM.maxZoom;
+
 /** Offline-Hintergrund ohne Kacheln: Länderflächen aus den gebündelten Natural-Earth-Daten. */
 export interface CountryBase {
   id: 'countries';

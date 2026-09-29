@@ -44,6 +44,9 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 28 | Einstellungen → Karte → „Offline-Karte“, dann Karte öffnen (mit Internet) | Länder als helle Flächen auf blauem Meer, Hinweisleiste „Offline-Karte …“, Touren liegen darüber und sind antippbar; Pfeiltasten/Zoom flüssig | |
 | 29 | Wie 28 im Flugmodus; Hell/Dunkel umschalten | Karte bleibt identisch sichtbar; Farben wechseln mit dem Design (Land/Meer/Grenzen) | |
 | 30 | Zurück auf „Online-Karte“ und wieder „Offline-Karte“ | Kacheln erscheinen/verschwinden richtig, keine doppelten Ebenen, Touren bleiben oben | |
+| 31 | Android: „Backup erstellen“, Teilen-Menü einmal ohne Auswahl schließen, einmal „Dateien“/Drive wählen | Ohne Auswahl: Hinweis „ohne Auswahl geschlossen“, „Letztes Backup“ unverändert. Mit Ziel: Erfolgsmeldung, „Letztes Backup“ aktualisiert | |
+| 32 | Offline-Karte, Kategorie mit nur einem Stellplatz (Tour ohne Track) antippen | Karte zoomt auf den Punkt und bleibt bedienbar (kein leeres/graues Bild, Zoom-Knöpfe funktionieren) | |
+| 33 | Online-Karte öffnen, zu „Daten“ wechseln, zurück zur Karte | Kartenhintergrund bleibt stehen (kein erneutes Laden/Flackern) | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

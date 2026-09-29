@@ -10,8 +10,12 @@ export function registerServiceWorker(onUpdate: (activate: () => void) => void):
   if (!import.meta.env.PROD || Capacitor.isNativePlatform() || !('serviceWorker' in navigator)) return;
   const hadController = navigator.serviceWorker.controller !== null;
   let reloading = false;
+  /** true, sobald der Nutzer „Neu laden“ gewählt hat. */
+  let requested = false;
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (!hadController || reloading) return;
+    // Erstinstallation (vorher kein Service Worker, clients.claim): nicht neu laden. Aber nach „Neu laden“ immer –
+    // auch in der ersten Sitzung, in der die Seite anfangs noch ohne Service Worker geladen wurde.
+    if (reloading || !(hadController || requested)) return;
     reloading = true;
     location.reload();
   });
@@ -19,7 +23,11 @@ export function registerServiceWorker(onUpdate: (activate: () => void) => void):
     navigator.serviceWorker
       .register(`${import.meta.env.BASE_URL}sw.js`)
       .then((registration) => {
-        const announce = (worker: ServiceWorker): void => onUpdate(() => worker.postMessage({ type: 'SKIP_WAITING' }));
+        const announce = (worker: ServiceWorker): void =>
+          onUpdate(() => {
+            requested = true;
+            worker.postMessage({ type: 'SKIP_WAITING' });
+          });
         if (registration.waiting && navigator.serviceWorker.controller) announce(registration.waiting);
         registration.addEventListener('updatefound', () => {
           const worker = registration.installing;

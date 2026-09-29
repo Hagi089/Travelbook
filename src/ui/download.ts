@@ -41,8 +41,11 @@ function blobToBase64(blob: Blob): Promise<string> {
  * Bietet eine Binärdatei (z. B. das Backup-ZIP) als Datei an. Wie `downloadText`, aber unter Android in Stücken von 3 MB
  * (Vielfaches von 3, damit Base64 ohne Füllzeichen in der Mitte entsteht), damit große Backups nicht als ein einziger
  * Text im Arbeitsspeicher landen. Ältere Backup-Dateien im App-Cache werden vorher entfernt.
+ *
+ * Rückgabe: `false`, wenn das Android-Teilen-Menü ohne Auswahl geschlossen wurde (die Datei liegt dann nur im App-Cache),
+ * sonst `true` (Browser: Download angestoßen; ob der Nutzer ihn speichert, ist nicht erkennbar).
  */
-export async function downloadBlob(fileName: string, blob: Blob, mimeType = 'application/zip', dialogTitle = 'Backup speichern oder teilen'): Promise<void> {
+export async function downloadBlob(fileName: string, blob: Blob, mimeType = 'application/zip', dialogTitle = 'Backup speichern oder teilen'): Promise<boolean> {
   if (Capacitor.isNativePlatform()) {
     try {
       const { files } = await Filesystem.readdir({ path: '', directory: Directory.Cache });
@@ -63,8 +66,9 @@ export async function downloadBlob(fileName: string, blob: Blob, mimeType = 'app
       await Share.share({ title: fileName, dialogTitle, url: uri });
     } catch (e) {
       if (!/cancel/i.test(e instanceof Error ? e.message : String(e))) throw e;
+      return false;
     }
-    return;
+    return true;
   }
   const url = URL.createObjectURL(blob.type === mimeType ? blob : new Blob([blob], { type: mimeType }));
   const a = h('a', { href: url, download: fileName });
@@ -72,4 +76,5 @@ export async function downloadBlob(fileName: string, blob: Blob, mimeType = 'app
   a.click();
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 10000);
+  return true;
 }

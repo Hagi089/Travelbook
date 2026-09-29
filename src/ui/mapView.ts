@@ -4,7 +4,7 @@ import { getTrackPoints, listCategories, listTours, type Category, type GpxDb } 
 import { getMapMode } from '../map/mapMode';
 import { toSegments } from '../map/simplify';
 import { createCountryBase, type CountryBase, type CountryBaseColors } from '../map/countryLayer';
-import { getMapBackground } from '../map/tileSource';
+import { getMapBackground, MAP_MAX_ZOOM } from '../map/tileSource';
 import { h, type View } from './dom';
 import { icon } from './icons';
 import { createOnlineNotice } from './onlineNotice';
@@ -51,6 +51,8 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
     const activeMap = map;
     const bg = getMapBackground(getMapMode());
     if (bg.kind === 'countries' && baseState !== 'none') return; // Offline-Weltkarte steht schon bzw. wird gerade geladen
+    // Online-Kacheln stehen schon: nicht bei jedem Öffnen der Karte neu anlegen (spart Kachel-Abrufe bei OSM, kein Flackern).
+    if (bg.kind === 'tiles' && tiles) return;
     tiles?.remove();
     tiles = null;
     clearBase();
@@ -146,7 +148,9 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
     el,
     async onShow() {
       if (!map) {
-        map = createMap(mapEl, { worldCopyJump: true }).setView([20, 0], 2);
+        // maxZoom fest setzen: Ohne Kachelebene (Offline-Weltkarte) wäre die höchste Zoomstufe sonst "unendlich", und
+        // fitBounds auf eine einzelne Position (z. B. Stellplatz ohne Track) würde die Karte unbrauchbar machen.
+        map = createMap(mapEl, { worldCopyJump: true, maxZoom: MAP_MAX_ZOOM }).setView([20, 0], 2);
       }
       applyTileSource();
       map.invalidateSize();

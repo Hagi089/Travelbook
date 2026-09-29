@@ -156,6 +156,17 @@ export function parseManifest(x: unknown): BackupManifest {
   };
 }
 
+/** Ersatzfarbe für ungültige Farbangaben (wie neue Kategorien in den Einstellungen). */
+export const FALLBACK_CATEGORY_COLOR = '#607d8b';
+
+/**
+ * Die Farbe landet in der Oberfläche in einem `style`-Attribut. Aus einer (evtl. fremden) Backup-Datei wird deshalb nur
+ * eine Hex-Farbe übernommen, wie sie die Farbauswahl der App erzeugt; alles andere wird durch die Ersatzfarbe ersetzt.
+ */
+export function sanitizeColor(v: string): string {
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v : FALLBACK_CATEGORY_COLOR;
+}
+
 export function parseCategory(x: unknown): Category {
   const o = rec(x, 'Kategorie');
   const name = str(o, 'name', 'Kategorie').trim();
@@ -163,7 +174,7 @@ export function parseCategory(x: unknown): Category {
   return {
     id: id(o, 'id', 'Kategorie'),
     name,
-    color: str(o, 'color', 'Kategorie'),
+    color: sanitizeColor(str(o, 'color', 'Kategorie')),
     sortOrder: num(o, 'sortOrder', 'Kategorie'),
     isDefault: o.isDefault === true,
     createdAt: num(o, 'createdAt', 'Kategorie'),

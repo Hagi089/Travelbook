@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BACKUP_FORMAT, BACKUP_VERSION, assertUnique, parseCategory, parseManifest, parsePhotoMeta, parseTour, parseTrackPoint, parseWaypoint, photoFileName } from '../src/backup/format';
+import { BACKUP_FORMAT, BACKUP_VERSION, FALLBACK_CATEGORY_COLOR, assertUnique, parseCategory, parseManifest, parsePhotoMeta, parseTour, parseTrackPoint, parseWaypoint, photoFileName } from '../src/backup/format';
 import { BACKUP_SETTING_KEYS, applySettings, collectSettings, sanitizeSettings } from '../src/backup/settings';
 
 const tour = {
@@ -35,6 +35,12 @@ describe('Backup-Format: Prüfung', () => {
     expect(() => parsePhotoMeta({ id: 'p', tourId: 't', mimeType: 'image/jpeg', width: -1, height: 1, createdAt: 1 })).toThrow('natürliche Zahl');
     expect(parseTrackPoint({ seq: 0, segment: 0, lat: 1, lon: 2, ele: null, time: 5, accuracy: 3 }, 't')).toEqual({ seq: 0, segment: 0, lat: 1, lon: 2, ele: null, time: 5, accuracy: 3 });
     expect(() => parseTrackPoint({ seq: 0, segment: 0, lat: 1, lon: 200 }, 't')).toThrow('Koordinaten');
+  });
+  it('übernimmt nur Hex-Farben (Farbe landet in einem style-Attribut)', () => {
+    const cat = { id: 'c', name: 'K', sortOrder: 0, createdAt: 1, updatedAt: 1 };
+    expect(parseCategory({ ...cat, color: '#1E88e5' }).color).toBe('#1E88e5');
+    expect(parseCategory({ ...cat, color: 'red;background-image:url(https://example.org/x)' }).color).toBe(FALLBACK_CATEGORY_COLOR);
+    expect(parseCategory({ ...cat, color: '#fff' }).color).toBe(FALLBACK_CATEGORY_COLOR);
   });
   it('erkennt doppelte Kennungen und bildet Foto-Dateinamen', () => {
     expect(() => assertUnique(['a', 'b', 'a'], 'Tour')).toThrow('doppelt');

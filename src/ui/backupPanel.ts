@@ -78,7 +78,12 @@ export function createBackupPanel(db: GpxDb): { el: HTMLElement; refresh(): Prom
     try {
       if (await hasOpenRecording(db)) throw new Error(OPEN_RECORDING_MESSAGE);
       const result = await createBackup(db, collectSettings(), Date.now(), setProgress);
-      await downloadBlob(result.fileName, result.blob);
+      const handedOver = await downloadBlob(result.fileName, result.blob);
+      if (!handedOver) {
+        // Teilen-Menü ohne Auswahl geschlossen: „Letztes Backup“ nicht aktualisieren, sonst entsteht falsche Sicherheit.
+        show('Das Teilen-Menü wurde ohne Auswahl geschlossen – das Backup wurde vermutlich nirgends gespeichert. Bitte erneut „Backup erstellen“ wählen und ein Ziel (z. B. Drive oder „Dateien“) auswählen.', true);
+        return;
+      }
       setLastBackup(result.manifest.createdAt);
       const c = result.manifest.counts;
       show(`Backup erstellt (${sizeText(result.blob.size)}): ${num(c.tours)} Touren, ${num(c.photos)} Fotos, ${num(c.trackPoints)} Trackpunkte. Bitte die Datei an einem sicheren Ort ablegen (nicht nur auf diesem Gerät).`);

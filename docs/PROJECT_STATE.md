@@ -111,6 +111,23 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Rückbau `TEMP-ONLINE-MAP`: teilweise (Begründung in ARCHITECTURE.md), Markierung bleibt an Online-Hinweis und OSM-Notiz.
 - Unsicherheiten: (1) Optik und Geschwindigkeit der Canvas-Ebene auf Handy und Browser ungesehen (Prüffälle 28–30). (2) Bei starkem Zoom nur grobe Flächen. (3) Stufe 2 (Regionalkarten) ist nicht umgesetzt und braucht eine eigene Entscheidung.
 
+## Gesamtprüfung des Projekts (29.09.2026, nach Phase 8c Stufe 1)
+Ganzer Code geprüft (Datenbank, GPX, Aufnahme TS + Kotlin, Oberfläche, Länder, Backup, Service Worker, Karte, CI). Behoben (nur das Nötige, kein Umbau):
+1. **Offline-Karte konnte unbrauchbar werden** (`src/ui/mapView.ts`, `src/map/tileSource.ts`): Ohne Kachelebene hat Leaflet keine höchste Zoomstufe; `fitBounds` auf eine einzelne Position (z. B. Stellplatz ohne Track, Kategorienfilter mit nur einem Punkt) ergab Zoom „unendlich“. Jetzt feste Obergrenze `MAP_MAX_ZOOM` = 19 (wie OSM, online also unverändert). Test in `tests/ui-helpers.test.ts`.
+2. **Online-Kacheln wurden bei jedem Öffnen der Karte neu angelegt** (`mapView.ts`, bestand seit Phase 4): Flackern und unnötige Abrufe bei OSM. Die Kachelebene bleibt jetzt stehen, solange der Modus „online“ bleibt.
+3. **Update-Hinweis ohne Wirkung in der ersten Sitzung** (`src/pwa/register.ts`): Wurde die Seite anfangs ohne Service Worker geladen und kam in derselben Sitzung eine neue Version, lud „Neu laden“ die Seite nicht neu (alte Oberfläche lief mit neuem Cache weiter). Jetzt wird nach „Neu laden“ immer neu geladen; beim allerersten Installieren weiterhin nicht.
+4. **Snackbar entfernte den Hinweis „Neue Version verfügbar“** (`src/ui/sheet.ts`): z. B. die Meldung „unterbrochene Aufnahme gerettet“ löschte den stehenden Update-Hinweis. Jetzt nur noch frühere kurze Meldungen ersetzt.
+5. **„Letztes Backup“ wurde auch bei abgebrochenem Teilen-Menü aktualisiert** (`src/ui/download.ts`, `src/ui/backupPanel.ts`): falsche Sicherheit. `downloadBlob` meldet jetzt, ob das Teilen-Menü ohne Auswahl geschlossen wurde; dann Hinweis statt Erfolgsmeldung. Unsicherheit: `@capacitor/share` meldet „abgebrochen“ laut Quellcode nur, wenn kein Ziel gewählt und die App nicht verlassen wurde; ob einzelne Ziele fälschlich als Abbruch gelten, ist am Gerät zu prüfen (Fall 31).
+6. **Kategorienfarbe aus Backup-Dateien ungeprüft in `style`-Attributen** (`src/backup/format.ts`): Eine manipulierte Datei konnte beliebiges CSS einschleusen (z. B. Nachladen fremder Adressen). Jetzt nur `#rrggbb`, sonst Ersatzfarbe. Test in `tests/backup-format.test.ts`.
+
+Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für später):
+- Karte lädt bei jedem Öffnen alle Trackpunkte aller Touren (bekannte Interimslösung, ADR-002); bei sehr vielen Touren langsam.
+- Design „System“ wird im Backup nicht gespeichert (Schlüssel fehlt dann); beim Wiederherstellen bleibt die Darstellung des Geräts. Klein, nicht geändert.
+- Nur „ungefährer Standort“ erlaubt: Aufnahme startet nicht, Meldung spricht allgemein von fehlender Standortberechtigung.
+- Exportierte GPX-Dateien bleiben im App-Cache liegen (Android räumt den Cache bei Bedarf selbst).
+- Kein `package-lock.json`: CI installiert je Lauf die neuesten passenden Versionen.
+- Lokal geprüft: 26 Tests (Backup-Format, Karten-Hilfen, ZIP, Service Worker) mit Ersatzrunner grün, Typprüfung von `src` gegen Platzhalter-Typen ohne Befund. Volle Prüfung nur in der CI.
+
 ## Aktuell in Arbeit
 - Phase 8 (8a, 8b, 8c Stufe 1) umgesetzt; wartet auf CI-Ergebnis und Gerätetests (TEST_REPORT.md Fälle 20–30). Danach: Stufe 2 der Offline-Karte klären, Phase 9 (unabhängiger Testdurchlauf).
 
