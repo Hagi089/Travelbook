@@ -38,6 +38,9 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 22 | App-Daten löschen bzw. neu installieren, „Backup wiederherstellen“ → Datei wählen → „Ersetzen“ | Vorschau mit Anzahlen; danach Touren, Tracks, Notizen, Kategorien und Fotos wie vorher; Design/Kartenmodus wie gesichert | |
 | 23 | Zweites Gerät (oder nach einer neuen Tour): „Zusammenführen“ | Nur fehlende Touren kommen dazu, vorhandene bleiben unverändert | |
 | 24 | Backup während laufender Aufnahme; Datei mit anderem ZIP/beschädigt wählen | Verständliche Meldung, keine Änderung an den Daten | |
+| 25 | Webseite (https://hagi089.github.io/Travelbook/) einmal online öffnen, kurz warten, dann Flugmodus und Seite neu laden bzw. aus dem Startbildschirm öffnen | App startet ohne Netz, Touren/Daten sichtbar, Ländername in der Liste (Länderdaten geladen); Kartenhintergrund fehlt (bis 8c) | |
+| 26 | Nach einer neuen Version (nächster Deploy) App öffnen | Hinweis „Neue Version verfügbar“ mit „Neu laden“; nach Antippen lädt die App neu und zeigt die neue Version; ohne Antippen bleibt die laufende Sitzung unberührt | |
+| 27 | Erster Besuch mit leerem Browser-Speicher | Kein Hinweis „Neue Version“, kein unerwartetes Neuladen | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

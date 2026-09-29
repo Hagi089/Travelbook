@@ -58,5 +58,11 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 - Speicherwunsch: `navigator.storage.persist()` beim Start (`src/main.ts`), Status in der Sicherung-Karte.
 - Grenzen: Backup nicht verschlüsselt; höchstens 65.534 Dateien und 4 GB je ZIP; Fotos werden für die Prüfsumme einzeln in den Speicher gelesen, Tracks tourweise; Grenzen bei sehr großen Backups auf dem Gerät nicht gemessen.
 
+## PWA-Offline (Phase 8b)
+- `scripts/sw.template.js` ist die Vorlage des Service Workers; das Vite-Plugin `travelbook-sw` in `vite.config.ts` schreibt nach dem Build `dist/sw.js` mit der Liste aller Ausgabedateien (ohne Sourcemaps) und einer Version aus dem Inhalt aller Dateien. Registrierung: `src/pwa/register.ts` (nur Produktions-Build, nicht in der Android-App, Pfad über `import.meta.env.BASE_URL`, deshalb passt es zu `/Travelbook/` und zu `./`). Hinweis „Neue Version verfügbar – Neu laden“: `src/ui/updateNotice.ts`.
+- Verhalten: Installation lädt alle App-Dateien (am HTTP-Cache vorbei) und schlägt als Ganzes fehl, wenn eine Datei fehlt (der bisherige Service Worker bleibt dann aktiv). Ein neuer Service Worker wartet, bis der Nutzer „Neu laden“ antippt (`SKIP_WAITING`), damit eine laufende Aufnahme oder ein offenes Formular nicht unterbrochen wird; beim allerersten Installieren gibt es weder Hinweis noch Neuladen. Alte Caches (`travelbook-<Version>`) werden beim Aktivieren gelöscht. Navigationen liefern die zwischengespeicherte `index.html`, Dateien der App kommen zuerst aus dem Cache. Anfragen an fremde Herkünfte (OSM-Kacheln) und Nicht-GET-Anfragen werden nicht angefasst, Kacheln also nicht gespeichert (ADR-002).
+- Tests: `tests/sw.test.ts` führt die Vorlage mit Attrappen für Cache/Netz aus (Installation, Fehlschlag, Aufräumen, Warten auf Freigabe, Offline-Auslieferung, fremde Herkunft, Netzfehler). Nicht automatisch getestet: echtes Verhalten im Browser (Installation, Update-Ablauf).
+- Bekannte Grenzen: Das Neuladen nach „Neu laden“ ist erst mit dem nächsten Start der Installation vollständig belegt (siehe TEST_REPORT.md). Kein eigener Installations-Knopf (der Browser bietet „Zur Startseite hinzufügen“). Ob iOS/Safari sich gleich verhält, ist nicht geprüft.
+
 ## Nicht umgesetzt
 - Oberfläche für Import/Export, Dateiauswahl, Teilen unter Android, Kompression großer Tracks, Import anderer Formate (TCX, KML, FIT).

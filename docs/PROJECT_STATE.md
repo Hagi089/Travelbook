@@ -99,8 +99,14 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Tests: `tests/zip.test.ts`, `tests/backup-format.test.ts`, `tests/backup.test.ts` (Roundtrip Ersetzen/Zusammenführen, Fotos byte-genau, 50.000 Punkte, beschädigte/fremde/neuere Dateien, laufende Aufnahme). Lokal geprüft: ZIP-Modul (auch mit Pythons `zipfile`) und Formatprüfung (11 Tests mit Ersatzrunner) sowie Typprüfung der neuen Dateien gegen eine handgeschriebene Dexie-Attrappe. Die Datenbank-Tests laufen erst in der CI.
 - Unsicherheiten: (1) Ersetzen ist nicht in einer einzigen Transaktion (siehe TECHNICAL_DOCUMENTATION.md). (2) Unter Android ist der Weg Cache-Datei → Teilen-Menü für große Dateien ungetestet; Speicherbedarf bei sehr großen Backups (viele Fotos) nicht gemessen. (3) Dateiauswahl (`<input type=file>`) für ZIP in der Android-WebView ungetestet. (4) Nach dem Wiederherstellen wird die App neu geladen, damit alle Ansichten frische Daten zeigen. (5) Lösch-Rückfrage bei „Ersetzen“ nutzt weiter `confirm`.
 
+## Phase 8b (29.09.2026): PWA-Offline – implementiert, auf dem Gerät/im Browser ungetestet
+- Neu: `scripts/sw.template.js` + Vite-Plugin in `vite.config.ts` (erzeugt `dist/sw.js`), `src/pwa/register.ts`, `src/ui/updateNotice.ts`, Aufruf in `src/main.ts`; Test `tests/sw.test.ts`. Beschreibung: TECHNICAL_DOCUMENTATION.md. Kein Schema- oder Datenumbau; ohne Service-Worker-Unterstützung läuft die App wie bisher.
+- Entscheidung: eigener kleiner Service Worker statt `vite-plugin-pwa`, weil die Kompatibilität mit Vite 6 hier nicht prüfbar war (npm blockiert) und der Umfang klein ist.
+- Behebt die Unsicherheit aus 7b (5): Der Chunk mit den Ländergrenzen wird mitgespeichert.
+- Unsicherheiten: (1) Echter Ablauf im Browser (erster Start online, danach Flugmodus, Update-Hinweis) ungetestet; Prüffälle 25–27 in TEST_REPORT.md. (2) Kartenkacheln bleiben online-only, bis 8c umgesetzt ist. (3) Der Plugin-Teil lief lokal nur gegen ein Attrappen-Verzeichnis, der echte Build läuft in der CI.
+
 ## Aktuell in Arbeit
-- Phase 8a umgesetzt; als Nächstes 8b (PWA-Offline) und 8c Stufe 1 (Offline-Welt-Grundkarte).
+- Phase 8a und 8b umgesetzt; als Nächstes 8c Stufe 1 (Offline-Welt-Grundkarte, Rückbau `TEMP-ONLINE-MAP`).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).

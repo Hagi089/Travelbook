@@ -1,6 +1,8 @@
 import { DEFAULT_DB_NAME, GpxDb, seedDefaultCategories } from './db';
 import { h } from './ui/dom';
 import { startApp } from './ui/app';
+import { registerServiceWorker } from './pwa/register';
+import { showUpdateNotice } from './ui/updateNotice';
 import { initTheme } from './ui/theme';
 import './ui/theme.css';
 import './ui/styles.css';
@@ -25,6 +27,7 @@ async function boot(): Promise<void> {
     await seedDefaultCategories(db);
     void requestPersistentStorage();
     startApp(root, db);
+    registerServiceWorker(showUpdateNotice);
   } catch (e) {
     root.replaceChildren(
       h('div', { class: 'scroll' }, h('h2', {}, 'Datenbank nicht verfügbar'), h('p', {}, `Die lokale Datenbank konnte nicht geöffnet werden: ${e instanceof Error ? e.message : String(e)}`)),
