@@ -1,4 +1,4 @@
-# TECHNICAL_DOCUMENTATION (Stand: Phase 5b)
+# TECHNICAL_DOCUMENTATION (Stand: Phase 5b + UI-Überarbeitung)
 
 ## Module
 - `src/db/` – lokale Datenbank (siehe DATA_MODEL.md).
@@ -22,7 +22,13 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 - Von `npx cap sync android` erzeugt und nicht eingecheckt: `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`, `android/capacitor-cordova-android-plugins/`, `android/app/src/main/assets/public/`.
 - CI: `.github/workflows/android.yml` (npm install → Web-Build → `cap sync` → `gradle assembleDebug` → Artifact). Gradle-Wrapper ist nicht eingecheckt; die CI installiert Gradle 8.14.3 über `gradle/actions/setup-gradle`.
 - Bekannt: Export von GPX erfolgt unter Android noch per Browser-Download (`src/ui/download.ts`) und ist dort nicht geprüft.
- (bewusste Festlegungen, an echten Tracks zu überprüfen)
+## Oberfläche (Material Design 3)
+- Aufbau: `src/ui/app.ts` baut App-Leiste, Banner, Ansichten, FAB und Navigationsleiste. Hauptziele: Karte, Daten, Dashboard, Einstellungen. Unterseiten: `record`, `import` (Elternziel „Daten“), außerdem Details und Formulare innerhalb von `toursView`.
+- Ansichten steuern App-Leiste und FAB über das Objekt `Chrome` (`title`, `back`, `fab`). Wer eine Unterseite zeigt, setzt Titel und Zurück-Aktion; die Hauptziele setzen beides beim Wechsel zurück.
+- Farben ausschließlich über `--md-sys-color-*` (theme.css); neue Komponenten dürfen keine festen Farben verwenden. Dunkel gilt bei Geräteeinstellung oder `html[data-theme=dark]`. Die beiden Dunkel-Blöcke in theme.css müssen identisch bleiben.
+- Symbole: `icon('name')` aus `src/ui/icons.ts` (Pfaddaten, per DOM-API eingefügt). Neue Symbole dort ergänzen.
+
+## Berechnungsannahmen (bewusste Festlegungen, an echten Tracks zu überprüfen)
 - Höhenmeter: Änderungen unter 3 m werden als Rauschen ignoriert (`ELEVATION_THRESHOLD_M`).
 - GPS-Sprünge: Teilstücke mit mehr als 70 m/s (nur erkennbar mit Zeitstempeln) werden aus Distanz und Höchstgeschwindigkeit herausgenommen; die Rohpunkte bleiben gespeichert.
 - Durchschnittsgeschwindigkeit = Distanz / Gesamtdauer (Ende minus Start), nicht Bewegungszeit.

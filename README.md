@@ -19,4 +19,4 @@ Der Workflow `.github/workflows/android.yml` baut bei Änderungen an `android/`,
 Lokal (Android Studio Otter 2025.2.1+, JDK 21): `npm install && npm run android:sync`, dann `android/` öffnen.
 
 ## Dokumentation
-`docs/` (Architektur, Projektstatus, Datenmodell, technische Doku, Testbericht).
+`docs/` (Architektur, Projektstatus, Datenmodell, technische Doku, Testbericht). Oberfläche nach Material Design 3 mit Hell/Dunkel (siehe PROJECT_STATE.md).
