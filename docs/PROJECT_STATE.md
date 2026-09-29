@@ -120,7 +120,19 @@ Ganzer Code geprüft (Datenbank, GPX, Aufnahme TS + Kotlin, Oberfläche, Länder
 5. **„Letztes Backup“ wurde auch bei abgebrochenem Teilen-Menü aktualisiert** (`src/ui/download.ts`, `src/ui/backupPanel.ts`): falsche Sicherheit. `downloadBlob` meldet jetzt, ob das Teilen-Menü ohne Auswahl geschlossen wurde; dann Hinweis statt Erfolgsmeldung. Unsicherheit: `@capacitor/share` meldet „abgebrochen“ laut Quellcode nur, wenn kein Ziel gewählt und die App nicht verlassen wurde; ob einzelne Ziele fälschlich als Abbruch gelten, ist am Gerät zu prüfen (Fall 31).
 6. **Kategorienfarbe aus Backup-Dateien ungeprüft in `style`-Attributen** (`src/backup/format.ts`): Eine manipulierte Datei konnte beliebiges CSS einschleusen (z. B. Nachladen fremder Adressen). Jetzt nur `#rrggbb`, sonst Ersatzfarbe. Test in `tests/backup-format.test.ts`.
 
+Zweiter Durchgang (30.09.2026, nachts, eigenständig): App aus den Quellen gebaut (Leaflet, Dexie, fast-xml-parser von GitHub; Capacitor als „Web“ ersetzt) und in Chromium (390 px) durchgespielt: GPX-Import (2 Tracks, Waypoint, Foto im Import-Dialog), manuelle Tour, Suche, Details, Fotos + Vollbild, GPX-Export, Dashboard, Karte online/offline hell/dunkel, Klick auf Track in der Offline-Karte, Backup erstellen → Ersetzen in leerem Browser, Zusammenführen zweimal (keine Doppelten), fremde ZIP abgelehnt, Aufnahme im Browser mit simuliertem GPS, Android-Zurück (history.back), Service Worker: Offline-Start, Tour offline anlegen (Land offline erkannt), Update-Hinweis. Zusätzlich behoben:
+7. **Karte: gewählter Kategorie-Chip verschwand** (`mapView.ts`): Nach Antippen eines Chips weiter rechts sprang die Chipleiste an den Anfang zurück. Scrollposition bleibt jetzt erhalten.
+8. **Einzelpunkt wurde auf Zoom 19 eingepasst** (`mapView.ts`, `tileSource.ts`): ohne Umgebung. Einpassen jetzt höchstens bis Zoom 15 (`FIT_MAX_ZOOM`); von Hand weiter hineinzoomen bleibt möglich.
+9. **Karte las bei jedem Öffnen alle Trackpunkte neu** (`mapView.ts`): gemessen 100 Touren à 3000 Punkte ≈ 1,2 s im Desktop-Browser bei jedem Öffnen. Jetzt Zwischenspeicher je Tour (ID + `updatedAt`); erneutes Öffnen < 0,1 s. Erstes Öffnen nach App-Start unverändert.
+10. **Foto-Vollbild blieb nach Zurück-Taste stehen** (`photosSection.ts`): Die Detailansicht schloss sich, das Vollbild lag danach über der Liste. Schließt sich jetzt mit.
+- Fix 3 (Update-Hinweis) im Browser nachgewiesen: mit altem `register.ts` lädt „Neu laden“ in der ersten Sitzung nicht neu, mit neuem schon.
+
 Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für später):
+- Browser-Aufnahme: Verweigert der Nutzer die Standortabfrage erst beim Start, läuft die Aufnahme ohne Punkte weiter (keine Meldung); beim Beenden wird sie verworfen. Nur Browser-Notlösung, Android nicht betroffen.
+- Import-Dialog behält die zuletzt gezeigten Entwürfe beim erneuten Öffnen (gespeicherte sind gesperrt).
+- Ein GPX-Import derselben Datei zweimal legt die Tour doppelt an (keine Duplikaterkennung).
+- Bottom Sheet „Neue Tour“: Android-Zurück schließt die App statt des Sheets (kein History-Eintrag).
+- Die Oberflächen-Prüfung lief im Desktop-Chromium, nicht in der Android-WebView; OSM-Kacheln waren in der Testumgebung gesperrt.
 - Karte lädt bei jedem Öffnen alle Trackpunkte aller Touren (bekannte Interimslösung, ADR-002); bei sehr vielen Touren langsam.
 - Design „System“ wird im Backup nicht gespeichert (Schlüssel fehlt dann); beim Wiederherstellen bleibt die Darstellung des Geräts. Klein, nicht geändert.
 - Nur „ungefährer Standort“ erlaubt: Aufnahme startet nicht, Meldung spricht allgemein von fehlender Standortberechtigung.

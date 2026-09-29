@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TrackPoint } from '../src/db/types';
 import { toSegments } from '../src/map/simplify';
-import { getMapBackground, getTileSource, MAP_MAX_ZOOM, OFFLINE_COUNTRIES, ONLINE_OSM } from '../src/map/tileSource';
+import { FIT_MAX_ZOOM, getMapBackground, getTileSource, MAP_MAX_ZOOM, OFFLINE_COUNTRIES, ONLINE_OSM } from '../src/map/tileSource';
 import { formatDate, formatDistance, formatDuration, formatSpeed } from '../src/ui/format';
 
 function p(seq: number, segment = 0): TrackPoint {
@@ -42,6 +42,7 @@ describe('Kartenquelle', () => {
   it('begrenzt die Zoomstufe auch ohne Kachelebene (Offline-Karte, einzelner Punkt)', () => {
     expect(Number.isFinite(MAP_MAX_ZOOM)).toBe(true);
     expect(MAP_MAX_ZOOM).toBe(ONLINE_OSM.maxZoom);
+    expect(FIT_MAX_ZOOM).toBeLessThan(MAP_MAX_ZOOM);
   });
 });
 

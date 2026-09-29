@@ -47,6 +47,8 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 31 | Android: „Backup erstellen“, Teilen-Menü einmal ohne Auswahl schließen, einmal „Dateien“/Drive wählen | Ohne Auswahl: Hinweis „ohne Auswahl geschlossen“, „Letztes Backup“ unverändert. Mit Ziel: Erfolgsmeldung, „Letztes Backup“ aktualisiert | |
 | 32 | Offline-Karte, Kategorie mit nur einem Stellplatz (Tour ohne Track) antippen | Karte zoomt auf den Punkt und bleibt bedienbar (kein leeres/graues Bild, Zoom-Knöpfe funktionieren) | |
 | 33 | Online-Karte öffnen, zu „Daten“ wechseln, zurück zur Karte | Kartenhintergrund bleibt stehen (kein erneutes Laden/Flackern) | |
+| 34 | Tour-Details → Foto antippen (Vollbild) → Android-Zurück-Taste | Vollbild und Details schließen sich, Liste ist sichtbar (kein Foto bleibt stehen) | |
+| 35 | Viele Touren: Karte öffnen, zu „Daten“, zurück zur Karte; Kategorie-Chip ganz rechts antippen | Zweites Öffnen sofort; gewählter Chip bleibt sichtbar | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

@@ -34,6 +34,9 @@ export const ONLINE_OSM: TileSource = {
  */
 export const MAP_MAX_ZOOM = ONLINE_OSM.maxZoom;
 
+/** Höchste Zoomstufe beim automatischen Einpassen der Touren (etwa Stadtteil-Maßstab), damit Einzelpunkte Umgebung zeigen. */
+export const FIT_MAX_ZOOM = 15;
+
 /** Offline-Hintergrund ohne Kacheln: Länderflächen aus den gebündelten Natural-Earth-Daten. */
 export interface CountryBase {
   id: 'countries';

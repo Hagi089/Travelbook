@@ -1,10 +1,10 @@
 import { circleMarker, latLngBounds, map as createMap, polyline, tileLayer, type LatLngBounds, type LayerGroup, type Map as LMap, type Path, type TileLayer } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { getTrackPoints, listCategories, listTours, type Category, type GpxDb } from '../db-api';
+import { getTrackPoints, listCategories, listTours, type Category, type GpxDb, type Tour } from '../db-api';
 import { getMapMode } from '../map/mapMode';
-import { toSegments } from '../map/simplify';
+import { toSegments, type LatLngTuple } from '../map/simplify';
 import { createCountryBase, type CountryBase, type CountryBaseColors } from '../map/countryLayer';
-import { getMapBackground, MAP_MAX_ZOOM } from '../map/tileSource';
+import { FIT_MAX_ZOOM, getMapBackground, MAP_MAX_ZOOM } from '../map/tileSource';
 import { h, type View } from './dom';
 import { icon } from './icons';
 import { createOnlineNotice } from './onlineNotice';
@@ -90,6 +90,8 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
   let categories: Category[] = [];
 
   function renderChips(): void {
+    // Die Chipleiste wird neu gezeichnet; die Scrollposition bleibt erhalten, damit ein weiter rechts gewählter Chip sichtbar bleibt.
+    const scrollLeft = chips.scrollLeft;
     chips.replaceChildren();
     const add = (label: string, id: string | null, color?: string) => {
       const on = id === categoryFilter;
@@ -102,6 +104,22 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
     };
     add('Alle', null);
     for (const c of categories) add(c.name, c.id, c.color);
+    chips.scrollLeft = scrollLeft;
+  }
+
+  /**
+   * Vereinfachte Liniensegmente je Tour, zwischengespeichert nach Tour-ID und `updatedAt`: Ohne Zwischenspeicher würden bei
+   * jedem Öffnen der Karte alle Trackpunkte aller Touren neu gelesen (gemessen: 100 Touren à 3000 Punkte ≈ 1,2 s im
+   * Desktop-Browser, auf dem Handy entsprechend länger). Trackpunkte einer abgeschlossenen Tour ändern sich nur zusammen mit
+   * `updatedAt` (Abschluss einer Aufnahme) oder mit einer neuen ID (Import); laufende Aufnahmen erscheinen nicht auf der Karte.
+   */
+  const segmentCache = new Map<string, { updatedAt: number; segments: LatLngTuple[][] }>();
+  async function segmentsFor(tour: Tour): Promise<LatLngTuple[][]> {
+    const hit = segmentCache.get(tour.id);
+    if (hit && hit.updatedAt === tour.updatedAt) return hit.segments;
+    const segments = toSegments(await getTrackPoints(db, tour.id));
+    segmentCache.set(tour.id, { updatedAt: tour.updatedAt, segments });
+    return segments;
   }
 
   async function refresh(): Promise<void> {
@@ -110,8 +128,13 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
     categories = await listCategories(db);
     renderChips();
     const tours = await listTours(db, categoryFilter ? { categoryId: categoryFilter } : {});
-    const loaded = await Promise.all(tours.map(async (tour) => ({ tour, segments: toSegments(await getTrackPoints(db, tour.id)) })));
+    const loaded = await Promise.all(tours.map(async (tour) => ({ tour, segments: await segmentsFor(tour) })));
     if (my !== token || !map) return; // neuere Aktualisierung läuft
+    if (!categoryFilter) {
+      // Gelöschte Touren aus dem Zwischenspeicher entfernen (nur bei vollständiger Liste sicher erkennbar).
+      const present = new Set(tours.map((t) => t.id));
+      for (const id of segmentCache.keys()) if (!present.has(id)) segmentCache.delete(id);
+    }
     for (const line of lines) line.remove();
     lines = [];
     let bounds: LatLngBounds | null = null;
@@ -139,7 +162,8 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
     // Ausschnitt nur anpassen, wenn sich Filter oder Tourenauswahl geändert haben (nicht beim Zurückkehren aus den Details).
     const key = `${categoryFilter ?? ''}|${tours.map((t) => t.id).join(',')}`;
     if (bounds && key !== fittedKey) {
-      map.fitBounds(bounds, { padding: [24, 24] });
+      // Obergrenze beim Einpassen: Ein einzelner Punkt (Stellplatz) oder ein sehr kurzer Track soll mit Umgebung erscheinen.
+      map.fitBounds(bounds, { padding: [24, 24], maxZoom: FIT_MAX_ZOOM });
       fittedKey = key;
     }
   }

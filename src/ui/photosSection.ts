@@ -24,6 +24,7 @@ export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
     const viewer = h('div', { class: 'photo-viewer', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Foto' }, h('img', { src: url, alt: 'Foto der Tour' }), close);
     const shut = (): void => {
       document.removeEventListener('keydown', onKey);
+      window.removeEventListener('popstate', shut);
       viewer.remove();
     };
     const onKey = (e: KeyboardEvent): void => {
@@ -31,6 +32,8 @@ export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
     };
     viewer.addEventListener('click', shut);
     document.addEventListener('keydown', onKey);
+    // Android-Zurück-Taste verlässt die Detailansicht; das Vollbild darf dann nicht über der nächsten Seite stehen bleiben.
+    window.addEventListener('popstate', shut);
     document.body.append(viewer);
     close.focus();
   }
