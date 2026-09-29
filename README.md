@@ -1,7 +1,7 @@
 # GPX Tracker
 
-Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 1 – nur Projektgerüst.**
-Es sind noch keine Funktionen (Karte, Import, GPS-Aufzeichnung) implementiert.
+Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 2 – Projektgerüst und lokale Datenbank (`src/db`).**
+Noch keine Oberfläche, Karte, GPX-Import/-Export oder GPS-Aufzeichnung.
 
 ## Befehle
     npm install

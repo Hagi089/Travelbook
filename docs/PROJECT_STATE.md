@@ -1,36 +1,32 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 0 (Analyse)
+Stand: 29.09.2026 – Phase 2 (Datenmodell) implementiert, CI-Ergebnis siehe unten.
 
-## Aktueller Stand
-- Repository enthält nur den Projektauftrag (`Projetauftrag`). Kein Code, keine package.json, keine Konfiguration.
-- Es gibt nichts zu übernehmen oder zu schützen; Greenfield.
+## Repository
+- GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
 
-## Funktioniert bereits
-- Nichts (noch nichts implementiert).
+## Funktioniert (bestätigt)
+- Phase 1: Vite + TypeScript + Vitest, CI-Build und Pages-Deployment laufen grün, Seite ist erreichbar (Platzhaltertext).
 
-## In Arbeit
-- Analyse und Entwicklungsplan (dieses Dokument, ARCHITECTURE.md).
+## Implementiert, Ergebnis der Tests noch offen
+- Phase 2: Dexie-Datenbank (`src/db/`), Kategorien-, Tour-, Trackpunkt-, Foto-Funktionen, Tests in `tests/db.test.ts` (siehe DATA_MODEL.md).
+- Die Tests wurden in der Entwicklungsumgebung nicht ausgeführt (npm dort blockiert). Erst der grüne CI-Lauf gilt als Nachweis.
+
+## Aktuell in Arbeit
+- Abnahme von Phase 2 über CI.
 
 ## Nächste Schritte
-1. Entscheidungen in ARCHITECTURE.md bestätigen (Stack, Plugin-Strategie, Kartenkacheln).
-2. Phase 1: Projektgerüst (Vite, TypeScript, Vitest, GitHub Actions, PWA-Grundlage).
-3. Phase 2: Datenmodell + Dexie + Tests.
-4. Phase 3: GPX-Parser/Export + Berechnungen + Tests.
-5. Phase 4: Karte, Kategorien, Import-Dialog.
-6. Phase 5: Native Android-GPS (Foreground Service) – vor UI-Feinschliff, da Kernrisiko.
+1. Phase 3: GPX-Parser und -Export, Berechnung der Tourwerte (Distanz, Höhenmeter, Geschwindigkeit, GPS-Sprung-Markierung), Tests inkl. Roundtrip.
+2. Phase 4: Karte (Leaflet), Kategorien-UI, Import-Dialog.
+3. Phase 5: Native Android-GPS (Foreground Service, eigenes Kotlin-Plugin, ADR-001), Gerätetests.
 
 ## Bekannte Probleme
-- Keine (kein Code).
+- Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
 
 ## Offene Entscheidungen
-- Kartenquelle und Offline-Strategie (siehe ARCHITECTURE.md).
-- Zielversionen (Capacitor, Android compileSdk/targetSdk) – vor Projektstart aktuell recherchieren.
+- Kartenquelle und Offline-Strategie (ARCHITECTURE.md).
+- Capacitor- und Android-Zielversionen vor Phase 5 gegen aktuelle Doku bestätigen.
 
 ## Wichtige Architekturentscheidungen
 - ADR-001 (ARCHITECTURE.md): eigenes Kotlin-Plugin statt Community-Plugin; Transistorsoft als Fallback. Basiert auf Recherche, noch ohne Gerätetest.
-
-## Update Phase 1 (Gerüst)
-- Angelegt: package.json, tsconfig, vite.config.ts, index.html, manifest, src/main.ts, src/platform.ts, 1 Smoke-Test, GitHub-Actions-Workflow, README, .gitignore.
-- **Ungetestet:** `npm install`, `npm test`, `npm run build` wurden nicht ausgeführt (Sandbox ohne Netz). Abhängigkeitsversionen sind nicht gegen die Registry verifiziert.
-- Noch nicht vorhanden: Service Worker, Icons, Capacitor, Dexie, Leaflet.
+- Trackpunkte liegen getrennt von den Tour-Metadaten (DATA_MODEL.md).
