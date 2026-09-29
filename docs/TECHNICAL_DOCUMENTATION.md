@@ -1,4 +1,4 @@
-# TECHNICAL_DOCUMENTATION (Stand: Phase 5a)
+# TECHNICAL_DOCUMENTATION (Stand: Phase 5b)
 
 ## Module
 - `src/db/` – lokale Datenbank (siehe DATA_MODEL.md).
@@ -15,7 +15,13 @@
 Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`, `endTime = null`) und startet das Plugin mit `recordingId = tour.id`. Das Plugin schreibt Punkte nativ in einen Puffer und vergibt `seq` (ab 0) und `segment` (nach jedem Pausieren um 1 erhöht). Die Oberfläche holt Punkte per `getPendingPoints`, schreibt sie mit `bulkPut` unter `[tourId+seq]` und bestätigt sie erst danach mit `ackPoints`. Beim Beenden: `stop`, restliche Punkte übernehmen, `computeStats` über alle Punkte, Tour aktualisieren.
 - Ausfallsicherheit: Bricht die App zwischen Schreiben und Bestätigen ab, liefert das Plugin dieselben Punkte erneut; sie überschreiben sich selbst. `recoverRecordings` läuft beim App-Start: laufende Aufnahme → Punkte übernehmen, weiterlaufen lassen; Tour mit Quelle `recording` und ohne Endzeit, die nicht mehr läuft → verbliebene Punkte holen und abschließen (ohne Punkte: verwerfen).
 - Web-Fallback (`webFallback.ts`): nur Arbeitsspeicher-Puffer, nicht hintergrundfähig, Oberfläche zeigt einen Warnhinweis. Bei Neuladen der Seite gehen nur die noch nicht übernommenen Punkte (höchstens ca. 10 s) verloren; der Rest wird als unterbrochene Aufnahme gerettet.
-- Native Seite (Kotlin-Plugin `Tracking`): Phase 5b.
+- Native Seite (Kotlin-Plugin `Tracking`, Phase 5b): siehe „Umsetzung ADR-001 in Phase 5b“ in ARCHITECTURE.md. Schnittstelle nach außen ist genau `src/tracking/types.ts`; Rückgabewerte fehlender Höhe/Genauigkeit sind `null`.
+
+## Android-Build
+- `capacitor.config.json` (appId, webDir `dist`), `android/` (Gradle 8.14.3, AGP 8.13.0, Kotlin 2.2.20, minSdk 24, compile/targetSdk 36, JDK 21).
+- Von `npx cap sync android` erzeugt und nicht eingecheckt: `android/capacitor.settings.gradle`, `android/app/capacitor.build.gradle`, `android/capacitor-cordova-android-plugins/`, `android/app/src/main/assets/public/`.
+- CI: `.github/workflows/android.yml` (npm install → Web-Build → `cap sync` → `gradle assembleDebug` → Artifact). Gradle-Wrapper ist nicht eingecheckt; die CI installiert Gradle 8.14.3 über `gradle/actions/setup-gradle`.
+- Bekannt: Export von GPX erfolgt unter Android noch per Browser-Download (`src/ui/download.ts`) und ist dort nicht geprüft.
  (bewusste Festlegungen, an echten Tracks zu überprüfen)
 - Höhenmeter: Änderungen unter 3 m werden als Rauschen ignoriert (`ELEVATION_THRESHOLD_M`).
 - GPS-Sprünge: Teilstücke mit mehr als 70 m/s (nur erkennbar mit Zeitstempeln) werden aus Distanz und Höchstgeschwindigkeit herausgenommen; die Rohpunkte bleiben gespeichert.

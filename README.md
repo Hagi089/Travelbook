@@ -1,7 +1,7 @@
 # GPX Tracker
 
-Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 4a – lokale Datenbank, GPX-Import/-Export, Weltkarte (Online-Kacheln) mit Import und Einstellungen.**
-Noch keine GPS-Aufzeichnung, Kategorien-Verwaltung, Fotos oder Offline-Karte. Die Karte braucht aktuell eine Internetverbindung.
+Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 5 – lokale Datenbank, GPX-Import/-Export, Weltkarte (Online-Kacheln), Kategorien, Dashboard, GPS-Aufnahme (Android-App mit Foreground Service; im Browser nur eingeschränkt).**
+Noch keine Fotos, Offline-Karte, Backup. Die Karte braucht aktuell eine Internetverbindung. Der Android-Teil ist noch nicht auf Geräten getestet (siehe `docs/TEST_REPORT.md`).
 
 ## Befehle
     npm install
@@ -13,5 +13,10 @@ Noch keine GPS-Aufzeichnung, Kategorien-Verwaltung, Fotos oder Offline-Karte. Di
 Push auf `main` startet `.github/workflows/deploy.yml` (Test → Build → GitHub Pages).
 Einmalig im Repo: Settings → Pages → Source: „GitHub Actions“.
 
+## Android-App (Debug-APK)
+Der Workflow `.github/workflows/android.yml` baut bei Änderungen an `android/`, `src/tracking/` usw. eine Debug-APK (GitHub → Actions → „Android Debug APK“ → Artifact `travelbook-debug-apk`). Die APK ist mit dem eingecheckten Debug-Schlüssel `android/app/debug.keystore` signiert, damit neuere Builds die installierte App aktualisieren, ohne Daten zu löschen. Für eine Veröffentlichung ist ein eigener Release-Schlüssel nötig (noch nicht eingerichtet).
+
+Lokal (Android Studio Otter 2025.2.1+, JDK 21): `npm install && npm run android:sync`, dann `android/` öffnen.
+
 ## Dokumentation
-`docs/` (Architektur, Projektstatus). Android/Capacitor folgt in einer späteren Phase.
+`docs/` (Architektur, Projektstatus, Datenmodell, technische Doku, Testbericht).

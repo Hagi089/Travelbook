@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) implementiert, CI grün; Phase 5b (Android/Kotlin) als Nächstes.
+Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) und 5b (Android-Projekt, Kotlin-Plugin, Debug-APK aus der CI) implementiert, CI grün; Gerätetests stehen aus.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -41,11 +41,16 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Bekannt/bewusst: Eine laufende oder unterbrochene Aufnahme ist eine Tour mit Quelle `recording` ohne Endzeit und erscheint bis zum Abschluss in Liste und Dashboard (0 km). Live-Distanz wird noch nicht angezeigt (nur Zeit und Punktezahl).
 - Unsicherheit: Die Profile (Intervall/Distanz/Priorität) sind noch nicht festgelegt oder gemessen; das Kotlin-Plugin setzt sie in 5b, die Werte müssen an echten Geräten geprüft werden.
 
+## Phase 5b: Android (implementiert; CI baut die Debug-APK, auf keinem Gerät getestet)
+- Capacitor-Android-Projekt unter `android/` (App-ID `de.hagi089.travelbook`), Kotlin-Plugin `Tracking` (`TrackingStore` SQLite-Puffer, `TrackingService` Foreground Service Typ location, `TrackingPlugin`), Workflow `.github/workflows/android.yml` (Artifact `travelbook-debug-apk`, ca. 4,5 MB). Details: ARCHITECTURE.md (Umsetzung ADR-001), TECHNICAL_DOCUMENTATION.md.
+- Nachgewiesen nur: Gradle-Build und Kompilierung in der CI. NICHT nachgewiesen: Start der App auf dem Handy, Berechtigungsdialoge, Aufnahme bei gesperrtem Display, Wiederaufnahme, Verhalten je Hersteller.
+
 ## Aktuell in Arbeit
-- Phase 5b: Android-Projekt (Capacitor, eingecheckt unter `android/`), Kotlin-Plugin `Tracking` mit Foreground Service, native Persistenz (SQLite), CI-Job für Debug-APK.
+- Nichts offen im Code. Wartet auf Gerätetests des Nutzers.
 
 ## Nächste Schritte
-1. Phase 5b (siehe oben). Danach Gerätetests durch den Nutzer: gesperrtes Display, mindestens 2 h, zwei Hersteller, App-Kill und Neustart; Ergebnisse in TEST_REPORT.md (Pflicht laut ADR-001).
+1. Gerätetests durch den Nutzer nach der Anleitung in `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart). Ergebnisse dort eintragen; danach Fehler beheben oder ADR-001-Fallback (Transistorsoft) bewerten.
+2. Danach Phase 6 (Fotos/Notizen/Detail). Vorher klären: GPX-Export unter Android (Download funktioniert in der WebView vermutlich nicht), Live-Distanz in der Aufnahme.
 
 ## Bekannte Probleme
 - Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
@@ -58,7 +63,8 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 
 ## Temporäre Lösungen (später zurückbauen)
 - Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
-- Export per Browser-Download; unter Android (Capacitor) später durch Datei-Speichern/Teilen ersetzen.
+- Export per Browser-Download; unter Android (Capacitor) durch Datei-Speichern/Teilen ersetzen (Funktion in der WebView ungeprüft, vermutlich eingeschränkt).
+- Feste Debug-Signatur im Repository (`android/app/debug.keystore`); vor einer Veröffentlichung durch einen Release-Schlüssel ersetzen.
 
 ## Offene Entscheidungen
 - Schwellen für Höhenrauschen (3 m) und GPS-Sprung (70 m/s) an echten Tracks prüfen.
