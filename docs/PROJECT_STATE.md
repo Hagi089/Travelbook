@@ -25,6 +25,7 @@ Stand: 29.09.2026 – Phase 4a CI grün (Handy-Test offen); Phase 4b (Verwaltung
 - Manuelle Tour: Quelle `manual`, ohne Track; optional Distanz, Dauer und Ort (Breite/Länge). Nur mit Ort erscheint sie auf der Karte (als Punkt). Logik und Validierung in `src/db/manualTour.ts`, Tests in `tests/manual-tour.test.ts`.
 - Bei importierten Touren bleiben berechnete Werte unveränderlich; nur Name, Kategorie, Datum und Notizen sind änderbar.
 - Änderung an bestehendem Verhalten: `listTours` sortiert jetzt nach Datum, dann Startzeit (vorher Startzeit zuerst; manuelle Touren ohne Startzeit wären sonst immer ans Ende gerutscht).
+- Oberfläche überarbeitet: einheitliches Karten-/Formular-Design (hell/dunkel), Einstellungen in Abschnitten (Karte mit Auswahlkarten Online/Offline, Kategorien mit Farbpunkt, automatischem Speichern und Tourenzahl, Datenschutz), Tourenliste mit deutschem Datum. Im Testbrowser mit Beispieldaten geprüft (Handybreite); Kartenansicht und echte Datenbank dabei nicht beteiligt.
 - Nicht umgesetzt (bewusst): Ort per Kartenklick wählen, Kategorien umsortieren, Fotos in der Tourbearbeitung (Phase 6).
 
 ## Aktuell in Arbeit

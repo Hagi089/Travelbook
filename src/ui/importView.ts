@@ -9,11 +9,15 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
   const el = h(
     'section',
     { class: 'view scroll', hidden: '' },
-    h('h2', {}, 'GPX importieren'),
-    h('p', { class: 'muted' }, 'Wähle eine GPX-Datei. Vor dem Speichern kannst du Name, Kategorie, Datum und Notizen prüfen.'),
-    input,
-    status,
-    list,
+    h(
+      'div',
+      { class: 'page' },
+      h('h2', {}, 'GPX importieren'),
+      h('p', { class: 'muted' }, 'Wähle eine GPX-Datei. Vor dem Speichern kannst du Name, Kategorie, Datum und Notizen prüfen.'),
+      input,
+      status,
+      list,
+    ),
   );
   let categorySelectOptions: Array<{ id: string; name: string }> = [];
 
@@ -22,7 +26,7 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
     const category = h('select', {}, ...categorySelectOptions.map((c) => h('option', { value: c.id }, c.name)));
     const date = h('input', { type: 'date', value: draft.date });
     const notes = h('textarea', { rows: '3', placeholder: 'Notizen' });
-    const save = h('button', { type: 'button' }, 'Speichern');
+    const save = h('button', { type: 'button', class: 'primary' }, 'Speichern');
     const msg = h('div', { class: 'status' });
     const s = draft.stats;
     save.addEventListener('click', async () => {

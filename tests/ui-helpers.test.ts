@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { TrackPoint } from '../src/db/types';
 import { toSegments } from '../src/map/simplify';
 import { getTileSource, ONLINE_OSM, OFFLINE_MAPS_AVAILABLE } from '../src/map/tileSource';
-import { formatDistance, formatDuration, formatSpeed } from '../src/ui/format';
+import { formatDate, formatDistance, formatDuration, formatSpeed } from '../src/ui/format';
 
 function p(seq: number, segment = 0): TrackPoint {
   return { tourId: 't', seq, segment, lat: seq * 0.001, lon: 0, ele: null, time: null, accuracy: null };
@@ -48,5 +48,7 @@ describe('Formatierung', () => {
     expect(formatDuration(3600 + 5 * 60)).toBe('1 h 05 min');
     expect(formatSpeed(0)).toBe('–');
     expect(formatSpeed(10)).toBe('36,0 km/h');
+    expect(formatDate('2026-08-14')).toBe('14.08.2026');
+    expect(formatDate('unbekannt')).toBe('unbekannt');
   });
 });
