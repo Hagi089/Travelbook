@@ -13,7 +13,7 @@ describe('fitWithin', () => {
   });
   it('liefert mindestens 1 px und lehnt ungültige Maße ab', () => {
     expect(fitWithin(100000, 10)).toEqual({ width: 1600, height: 1 });
-    expect(() => fitWithin(0, 100)).toThrow('Maße');
+    expect(() => fitWithin(0, 100)).toThrow('Bildmaße');
   });
 });
 
