@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 
 // GitHub Pages liefert unter /<repo-name>/ aus. Wird in der CI per BASE_PATH gesetzt.
 // Lokal und für Capacitor (WebView) ist "./" korrekt.

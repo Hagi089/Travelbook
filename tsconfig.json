@@ -3,7 +3,7 @@
     "target": "ES2022", "module": "ESNext", "moduleResolution": "bundler",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "strict": true, "noUnusedLocals": true, "noUnusedParameters": true,
-    "skipLibCheck": true, "isolatedModules": true, "types": ["vite/client"]
+    "skipLibCheck": true, "isolatedModules": true, "types": ["vite/client", "node"]
   },
   "include": ["src", "tests", "vite.config.ts"]
 }
