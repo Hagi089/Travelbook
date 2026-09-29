@@ -1,4 +1,5 @@
-import { GpxError, listCategories, prepareImport, saveDraft, type GpxDb, type ImportDraft } from '../db-api';
+import { GpxError, addPhoto, listCategories, prepareImport, saveDraft, type GpxDb, type ImportDraft } from '../db-api';
+import { createStagedPhotos } from './photosSection';
 import { h, type View } from './dom';
 import { formatDistance, formatDuration, formatElevation } from './format';
 
@@ -14,7 +15,7 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
     h(
       'div',
       { class: 'page' },
-      h('p', { class: 'muted' }, 'Wähle eine GPX-Datei. Vor dem Speichern kannst du Name, Kategorie, Datum und Notizen prüfen.'),
+      h('p', { class: 'muted' }, 'Wähle eine GPX-Datei. Vor dem Speichern kannst du Name, Kategorie, Datum, Notizen und Fotos prüfen.'),
       pick,
       input,
       status,
@@ -28,14 +29,21 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
     const category = h('select', {}, ...categorySelectOptions.map((c) => h('option', { value: c.id }, c.name)));
     const date = h('input', { type: 'date', value: draft.date });
     const notes = h('textarea', { rows: '3', placeholder: 'Notizen' });
+    const photos = createStagedPhotos();
     const save = h('button', { type: 'button', class: 'primary' }, 'Speichern');
     const msg = h('div', { class: 'status' });
     const s = draft.stats;
     save.addEventListener('click', async () => {
       save.disabled = true;
       try {
-        await saveDraft(db, draft, { categoryId: category.value, name: name.value, notes: notes.value, date: date.value || draft.date });
-        msg.textContent = 'Gespeichert ✓';
+        const tour = await saveDraft(db, draft, { categoryId: category.value, name: name.value, notes: notes.value, date: date.value || draft.date });
+        let photoError = '';
+        try {
+          for (const p of photos.photos()) await addPhoto(db, tour.id, p);
+        } catch (e) {
+          photoError = ` Fotos konnten nicht alle gespeichert werden (${e instanceof Error ? e.message : String(e)}); bitte in den Tour-Details ergänzen.`;
+        }
+        msg.textContent = `Gespeichert ✓${photoError}`;
         onSaved();
       } catch (e) {
         save.disabled = false;
@@ -52,6 +60,7 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
       h('label', {}, 'Kategorie', category),
       h('label', {}, 'Datum', date),
       h('label', {}, 'Notizen', notes),
+      photos.el,
       save,
       msg,
     );

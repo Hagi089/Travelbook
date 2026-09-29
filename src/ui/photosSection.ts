@@ -1,5 +1,5 @@
 import { addPhoto, deletePhoto, listPhotos, MAX_PHOTOS_PER_TOUR, type GpxDb, type Photo } from '../db-api';
-import { preparePhoto } from '../photos/resize';
+import { preparePhoto, type PreparedPhoto } from '../photos/resize';
 import { h } from './dom';
 
 /**
@@ -91,4 +91,60 @@ export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
     msg.textContent = e instanceof Error ? e.message : String(e);
   });
   return root;
+}
+
+/**
+ * Fotoauswahl VOR dem Speichern einer Tour (Import-Dialog): Die Fotos werden verkleinert und im Speicher gehalten,
+ * bis der Aufrufer sie nach dem Speichern der Tour mit `addPhoto` übernimmt.
+ */
+export function createStagedPhotos(): { el: HTMLElement; photos: () => PreparedPhoto[] } {
+  const staged: PreparedPhoto[] = [];
+  const msg = h('div', { class: 'status error', role: 'status' });
+  const grid = h('div', { class: 'photo-grid' });
+  const input = h('input', { type: 'file', accept: 'image/*', hidden: '' });
+  let urls: string[] = [];
+  let busy = false;
+
+  function render(): void {
+    for (const u of urls) URL.revokeObjectURL(u);
+    urls = [];
+    grid.replaceChildren(
+      ...staged.map((p, i) => {
+        const url = URL.createObjectURL(p.data);
+        urls.push(url);
+        const remove = h('button', { type: 'button', class: 'photo-remove', 'aria-label': 'Foto entfernen' }, '×');
+        remove.addEventListener('click', () => {
+          staged.splice(i, 1);
+          render();
+        });
+        return h('div', { class: 'photo-cell' }, h('img', { src: url, alt: 'Ausgewähltes Foto', class: 'photo-img' }), remove);
+      }),
+    );
+    if (staged.length < MAX_PHOTOS_PER_TOUR) {
+      const add = h('button', { type: 'button', class: 'photo-add', 'aria-label': 'Foto hinzufügen' }, '+ Foto');
+      add.addEventListener('click', () => {
+        if (!busy) input.click();
+      });
+      grid.append(add);
+    }
+  }
+
+  input.addEventListener('change', async () => {
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file || busy || staged.length >= MAX_PHOTOS_PER_TOUR) return;
+    busy = true;
+    msg.textContent = '';
+    try {
+      staged.push(await preparePhoto(file));
+      render();
+    } catch (e) {
+      msg.textContent = e instanceof Error ? e.message : String(e);
+    } finally {
+      busy = false;
+    }
+  });
+
+  render();
+  return { el: h('div', { class: 'photos' }, h('h4', {}, `Fotos (max. ${MAX_PHOTOS_PER_TOUR})`), grid, input, msg), photos: () => [...staged] };
 }
