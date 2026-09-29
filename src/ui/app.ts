@@ -3,6 +3,8 @@ import { h, type View } from './dom';
 import { createDashboardView } from './dashboardView';
 import { createImportView } from './importView';
 import { createMapView } from './mapView';
+import { getTrackingPlugin } from '../tracking/plugin';
+import { createRecordView, recoverAtStartup } from './recordView';
 import { createSettingsView } from './settingsView';
 import { createToursView } from './toursView';
 
@@ -13,14 +15,17 @@ export function startApp(root: HTMLElement, db: GpxDb): void {
     await show('tours');
     await toursView.openTour(id, () => void show('map'));
   }
+  const tracking = getTrackingPlugin();
+  const recordView = createRecordView(db, tracking, () => undefined);
   const views: Record<string, View> = {
     map: createMapView(db, (id) => void openTourFromMap(id)),
+    record: recordView,
     tours: toursView,
     dashboard: createDashboardView(db),
     import: createImportView(db, () => undefined),
     settings: createSettingsView(db),
   };
-  const labels: Record<string, string> = { map: 'Karte', tours: 'Daten', dashboard: 'Dashboard', import: 'Import', settings: 'Einstellungen' };
+  const labels: Record<string, string> = { map: 'Karte', record: 'Aufnahme', tours: 'Daten', dashboard: 'Dashboard', import: 'Import', settings: 'Einstellungen' };
   const nav = h('nav', { class: 'nav' });
   const buttons: Record<string, HTMLButtonElement> = {};
 
@@ -40,4 +45,10 @@ export function startApp(root: HTMLElement, db: GpxDb): void {
   }
   root.replaceChildren(h('main', { class: 'main' }, ...Object.values(views).map((v) => v.el)), nav);
   void show('map');
+  // Crash-Recovery: unterbrochene Aufnahmen aufnehmen bzw. abschließen (docs/ARCHITECTURE.md, Android-GPS).
+  void recoverAtStartup(db, tracking)
+    .then((note) => {
+      if (note) recordView.setMessage(note);
+    })
+    .catch(() => undefined);
 }

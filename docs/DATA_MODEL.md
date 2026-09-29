@@ -21,10 +21,11 @@ Zeiten: Unix-Millisekunden UTC. Tourdatum `date`: "YYYY-MM-DD".
 - Tour löschen entfernt Trackpunkte, Waypoints und Fotos mit.
 - Höchstens 3 Fotos pro Tour.
 - Manuelle Touren (`source: 'manual'`) haben keine Trackpunkte, `startTime`/`endTime` sind `null`; `startPoint`/`endPoint` sind gleich dem optional angegebenen Ort. Distanz, Dauer und Ort sind nur bei ihnen änderbar (`updateTourDetails`).
+- Aufnahmen (`source: 'recording'`): Die Tour entsteht beim Start mit `endTime = null`; die `seq` der Trackpunkte ist die vom Plugin vergebene Nummer (idempotente Übernahme). Beim Abschluss werden Zeiten, Distanz usw. aus den Punkten berechnet. Eine Aufnahme ohne Punkte wird verworfen.
 - Listen sortieren nach `date` absteigend, dann `startTime` absteigend.
 - `createdAt` einer Tour bleibt bei Änderungen unverändert, `updatedAt` wird bei jeder Änderung gesetzt.
 
 ## Noch nicht umgesetzt
 - Berechnung der Tourwerte (Distanz, Höhenmeter, Geschwindigkeit) aus Trackpunkten: Phase 3.
 - Vereinfachte Geometrie für die Kartenübersicht (zusätzliche Tabelle, Schema-Version 2): Phase 4.
-- Fotokompression, EXIF-Bereinigung, Backup/Restore, native Aufzeichnungspuffer.
+- Fotokompression, EXIF-Bereinigung, Backup/Restore. Der native Aufzeichnungspuffer (Android, SQLite) liegt außerhalb dieser Datenbank und wird in Phase 5b umgesetzt.

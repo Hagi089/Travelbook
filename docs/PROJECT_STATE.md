@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4a und 4b (Verwaltung, manuelle Touren, Datenliste, Dashboard, Tour-Details aus der Karte) implementiert, CI grün, vom Nutzer im Browser/auf dem Handy bestätigt.
+Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) implementiert, CI-Ergebnis siehe unten; Phase 5b (Android/Kotlin) als Nächstes.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -32,11 +32,20 @@ Stand: 29.09.2026 – Phase 4a und 4b (Verwaltung, manuelle Touren, Datenliste, 
 - Nicht umgesetzt (bewusst): GPX-Wegpunkte (Waypoints) einer Tour erscheinen nicht als eigene Punkte auf der Karte.
 - Nicht umgesetzt (bewusst): Ort per Kartenklick wählen, Kategorien umsortieren, Fotos in der Tourbearbeitung (Phase 6).
 
+## Phase 5a: Web-Teil der Aufnahme (implementiert, CI-Ergebnis nach dem Push prüfen; Oberfläche noch nicht im Browser bestätigt)
+- `src/tracking/types.ts`: Schnittstelle `TrackingPlugin` (start, pause, resume, stop, getStatus, getPendingPoints, ackPoints, checkPermissions, requestPermissions, openSettings). Recording-ID = Tour-ID; `seq` des Plugins = `seq` in `trackPoints` (macht die Übernahme idempotent).
+- `src/tracking/recorder.ts`: `startRecording` (Tour zuerst anlegen, danach Plugin starten, bei Fehler Tour zurückrollen), `ingestPending` (erst in die Datenbank schreiben, dann bestätigen; serialisiert), `finishRecording`/`finalizeRecording` (Tourwerte aus den Punkten, leere Aufnahme wird verworfen), `recoverRecordings` (Crash-Recovery beim App-Start).
+- `src/tracking/webFallback.ts`: Browser-Fallback mit `watchPosition`, meldet `backgroundCapable: false`. `src/tracking/plugin.ts`: wählt unter Capacitor das native Plugin `Tracking`, sonst den Fallback (neue Abhängigkeit `@capacitor/core`).
+- `src/ui/recordView.ts`: neuer Tab „Aufnahme“ (Name, Kategorie, Genauigkeitsprofil, Start/Pause/Beenden, Zeit und Punktezahl, Hinweis bei fehlender Hintergrundfähigkeit). Übernahme der Punkte alle 10 s und bei Rückkehr in die App.
+- Tests: `tests/tracking.test.ts` (simulierter nativer Puffer: Idempotenz nach fehlgeschlagener Bestätigung, gleichzeitige Aufrufe, Segmente, Wiederherstellung, Web-Fallback).
+- Bekannt/bewusst: Eine laufende oder unterbrochene Aufnahme ist eine Tour mit Quelle `recording` ohne Endzeit und erscheint bis zum Abschluss in Liste und Dashboard (0 km). Live-Distanz wird noch nicht angezeigt (nur Zeit und Punktezahl).
+- Unsicherheit: Die Profile (Intervall/Distanz/Priorität) sind noch nicht festgelegt oder gemessen; das Kotlin-Plugin setzt sie in 5b, die Werte müssen an echten Geräten geprüft werden.
+
 ## Aktuell in Arbeit
-- Nichts offen. Nächster Schritt ist Phase 5.
+- Phase 5b: Android-Projekt (Capacitor, eingecheckt unter `android/`), Kotlin-Plugin `Tracking` mit Foreground Service, native Persistenz (SQLite), CI-Job für Debug-APK.
 
 ## Nächste Schritte
-1. Phase 5: Native Android-GPS (Foreground Service, eigenes Kotlin-Plugin, ADR-001), Gerätetests.
+1. Phase 5b (siehe oben). Danach Gerätetests durch den Nutzer: gesperrtes Display, mindestens 2 h, zwei Hersteller, App-Kill und Neustart; Ergebnisse in TEST_REPORT.md (Pflicht laut ADR-001).
 
 ## Bekannte Probleme
 - Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
@@ -54,7 +63,8 @@ Stand: 29.09.2026 – Phase 4a und 4b (Verwaltung, manuelle Touren, Datenliste, 
 ## Offene Entscheidungen
 - Schwellen für Höhenrauschen (3 m) und GPS-Sprung (70 m/s) an echten Tracks prüfen.
 - Kartenquelle und Offline-Strategie (ARCHITECTURE.md).
-- Capacitor- und Android-Zielversionen vor Phase 5 gegen aktuelle Doku bestätigen.
+- Bestätigt am 29.09.2026 (Capacitor-8-Update-Anleitung): Node 22, minSdk 24, compileSdk/targetSdk 36, Android Gradle Plugin 8.13.0, Gradle 8.14.3, Kotlin 2.2.20, Android Studio Otter 2025.2.1+. Genaue Patchversionen von `@capacitor/*` liegen nicht vor (npm hier blockiert); `^8.0.0` ist ein Platzhalter, die CI zeigt, was installiert wird.
+- Entschieden am 29.09.2026: applicationId `de.hagi089.travelbook`; Android-Ordner wird ins Repository eingecheckt (keine Erzeugung in der CI).
 
 ## Wichtige Architekturentscheidungen
 - ADR-001 (ARCHITECTURE.md): eigenes Kotlin-Plugin statt Community-Plugin; Transistorsoft als Fallback. Basiert auf Recherche, noch ohne Gerätetest.
