@@ -54,8 +54,13 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Unsicherheit/Abweichungen: (1) m3.material.io ließ sich nicht als Text lesen (JavaScript-Seite); die Umsetzung folgt den Token-Namen aus Googles Material-Web-Repository und meiner Kenntnis der M3-Spezifikation. (2) Farbwerte sind von Hand aus einem Grün-Startton (#386A20) gesetzt, nicht mit dem Material Theme Builder erzeugt; Kontraste nicht per Werkzeug gemessen. (3) Textfelder haben das Label über dem Feld statt schwebend im Rahmen (M3-Abweichung, spart den Umbau der Formulare). (4) Lösch-Bestätigungen nutzen weiter den Browser-Dialog `confirm`, keinen M3-Dialog. (5) Nicht auf einem echten Android-Gerät geprüft: Navigationsleiste bei schmalen Displays (die Beschriftung „Einstellungen“ ist bei 390 px knapp), Zurück-Taste, Tastatur über dem FAB.
 - Prüfung: `tests/theme.test.ts` (CI). Zusätzlich lokal (nicht im Repository): App mit In-Memory-Datenbankersatz in Chromium, Screenshots hell/dunkel bei 390 px und 20 Ablaufprüfungen (Theme, Zurück, Sheet, Banner); die Karte war dabei ein Platzhalter.
 
+## Gerätetest-Rückmeldung (29.09.2026)
+- Neue Oberfläche (Material 3): Nutzer ist zufrieden.
+- Befund: GPS-Erhebung im Profil „Normal“ zu gering. Ursache im Code: `TrackingService.startUpdates` verwendete für „normal“ 5 s Intervall / 5 m Mindestdistanz (Annahme, nie gemessen). Geändert: Normal 2 s / 3 m, Hoch 1 s / 0 m; „Akku sparen“ unverändert. Nur die Kotlin-Datei betroffen (Web-Fallback ignoriert die Frequenz, Datenmodell und Schnittstelle unverändert).
+- Unsicherheit: Ob „zu gering“ die Punktedichte oder die Positionsgenauigkeit (Fehler in m) meint, ist nicht geklärt; die Änderung adressiert die Punktedichte. Neue Werte sind Annahmen und am Gerät zu prüfen (Punktezahl/Kilometer, Rauschen im Stand, Akku). Falls die Positionsgenauigkeit gemeint ist: nächster Schritt wäre ein Filter auf `accuracy` (z. B. Punkte > 30 m verwerfen) bzw. `setWaitForAccurateLocation`.
+
 ## Aktuell in Arbeit
-- Nichts offen im Code. Wartet auf Gerätetests und Sichtprüfung der neuen Oberfläche durch den Nutzer.
+- Verdichtung Profil „Normal“ wartet auf erneuten Gerätetest (neue APK aus dem CI-Lauf nach diesem Commit).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).

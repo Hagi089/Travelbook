@@ -96,9 +96,11 @@ class TrackingService : Service() {
     private fun startUpdates(profile: String) {
         if (updating) return
         val (intervalMs, minDistanceM) = when (profile) {
-            "high" -> 2_000L to 0f
+            "high" -> 1_000L to 0f
             "saver" -> 15_000L to 10f
-            else -> 5_000L to 5f // "normal". Werte sind Annahmen und an echten Geräten zu prüfen.
+            // "normal": 29.09.2026 nach Gerätetest von 5 s / 5 m auf 2 s / 3 m verdichtet (zu wenige Punkte). Werte sind
+            // Annahmen und an echten Geräten zu prüfen (Punktedichte, Rauschen im Stand, Akkuverbrauch).
+            else -> 2_000L to 3f
         }
         val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, intervalMs)
             .setMinUpdateIntervalMillis(intervalMs)
