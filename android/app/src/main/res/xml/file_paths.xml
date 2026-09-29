@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Freigabe von Dateien über den Android-Teilen-Dialog (@capacitor/share). Nur der App-Cache wird freigegeben:
+     src/ui/download.ts schreibt GPX-Exporte dorthin (Directory.Cache). -->
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <cache-path name="export_cache" path="." />
+</paths>
