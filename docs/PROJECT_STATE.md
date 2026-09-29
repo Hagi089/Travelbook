@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 3 (GPX, Berechnungen) implementiert; Test-Ergebnis siehe CI.
+Stand: 29.09.2026 – Phase 3 (GPX, Berechnungen) abgeschlossen, CI grün.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -12,11 +12,11 @@ Stand: 29.09.2026 – Phase 3 (GPX, Berechnungen) implementiert; Test-Ergebnis s
 - Phase 2: Dexie-Datenbank (`src/db/`), Kategorien-, Tour-, Trackpunkt-, Foto-Funktionen, Tests in `tests/db.test.ts` (siehe DATA_MODEL.md).
 - Tests laufen nur in der CI (npm ist in der Entwicklungsumgebung blockiert). Testergebnisse werden bei Bedarf in TEST_REPORT.md festgehalten.
 
-## Implementiert, per CI noch zu bestätigen
+## Funktioniert (Phase 3, per CI bestätigt: Tests, Typprüfung, Build, Deploy)
 - Phase 3: GPX-Parser, -Export, Berechnung der Tourwerte, Import-Entwurf (`src/gpx/`, `tests/gpx.test.ts`), siehe TECHNICAL_DOCUMENTATION.md. Enthält Roundtrip-Tests (Parser/Export und Import → Datenbank → Export → Import) und einen Test mit 50.000 Punkten.
 
 ## Aktuell in Arbeit
-- Abnahme von Phase 3 über CI.
+- Nichts; Phase 4 folgt.
 
 ## Nächste Schritte
 1. Phase 4: Karte (Leaflet), Kategorien-UI, Import-Dialog.
