@@ -25,6 +25,7 @@ Stand 29.09.2026: `npm test` (Vitest) und `npm run build` (Typprüfung) laufen i
 | 9 | Tour in „Daten“ öffnen → GPX exportieren (Android) | Android-Teilen-Menü öffnet sich (Datei `<Name>.gpx`), Speichern/Teilen möglich; Abbrechen zeigt keinen Fehler | |
 | 10 | Während der Aufnahme: „Strecke“ in der Aufnahmeansicht | Wert steigt, passt grob zur gegangenen Strecke | |
 | 11 | Während der Aufnahme: Datenliste, Karte, Dashboard ansehen | Laufende Aufnahme erscheint dort nicht (Banner „Aufnahme läuft“ bleibt) | |
+| 12 | Tour öffnen → „+ Foto“ → Foto aufnehmen bzw. aus Galerie wählen (bis 3), Foto antippen, Foto entfernen | Vorschau erscheint, Vollbild öffnet/schließt, Entfernen mit Rückfrage; Foto hochkant korrekt ausgerichtet; nach 3 Fotos verschwindet „+ Foto“; nach App-Neustart noch vorhanden |  |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

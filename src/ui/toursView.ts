@@ -17,6 +17,7 @@ import {
 import type { Chrome } from './chrome';
 import { h, type View } from './dom';
 import { downloadText } from './download';
+import { createPhotosSection } from './photosSection';
 import { formatDate, formatDistance, formatDuration, formatElevation, formatSpeed } from './format';
 import { kpi } from './kpi';
 
@@ -191,6 +192,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
       h('div', { class: 'detail-meta' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'muted' }, `${cat?.name ?? 'Ohne Kategorie'} · ${formatDate(tour.date)}${isManual ? ' · manuell angelegt' : ''}`)),
       kpis.length > 0 ? h('div', { class: 'kpis' }, ...kpis) : null,
       tour.startPoint && isManual ? h('div', { class: 'muted' }, `Ort: ${tour.startPoint.lat.toFixed(5)}, ${tour.startPoint.lon.toFixed(5)}`) : null,
+      createPhotosSection(db, tour.id),
       h('h4', {}, 'Notizen'),
       tour.notes ? h('div', { class: 'notes' }, tour.notes) : h('p', { class: 'muted' }, 'Keine Notizen.'),
       actions,

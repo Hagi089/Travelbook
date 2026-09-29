@@ -66,8 +66,13 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Live-Distanz: Aufnahmeansicht zeigt „Strecke“ (`computeStats` über die übernommenen Punkte, Aktualisierung alle 10 s und bei Rückkehr in die App; neuester Punkt kann bis zu 10 s fehlen).
 - GPX-Export unter Android: `src/ui/download.ts` schreibt die Datei mit `@capacitor/filesystem` in den App-Cache und öffnet das Android-Teilen-Menü (`@capacitor/share`); im Browser bleibt der normale Download. Neue Abhängigkeiten `@capacitor/filesystem ^8.1.3`, `@capacitor/share ^8.0.2` (Versionen per npm-Registry geprüft, peer `@capacitor/core >=8`). Gerätetest 29.09.2026: Fehler „Couldn't find meta-data for provider with authority de.hagi089.travelbook.fileprovider“ – im selbst erstellten Android-Projekt fehlte der `FileProvider`. Behoben durch `<provider>` in `AndroidManifest.xml` und `res/xml/file_paths.xml` (nur App-Cache freigegeben); Wirkung nach neuer APK erneut zu prüfen. Unsicherheit: Verhalten auf dem Gerät (Teilen-Menü, Dateiname, „Speichern unter“) nicht bestätigt; kein `package-lock.json` im Repository.
 
+## Phase 6 (begonnen 29.09.2026): Fotos in der Tour-Detailansicht (CI zu bestätigen, Gerät ungetestet)
+- Bereits vorhanden: Notizfeld (Bearbeiten), Detailansicht, `addPhoto`/`listPhotos`/`deletePhoto` mit Grenze 3 Fotos (Phase 2).
+- Neu: `src/photos/resize.ts` (`preparePhoto`: EXIF-Ausrichtung anwenden, längste Kante max. 1600 px, JPEG Qualität 0,8; EXIF-Metadaten inkl. GPS entfallen durch die Neukodierung; `fitWithin` getestet), `src/ui/photosSection.ts` (Abschnitt „Fotos“ mit Vorschau, „+ Foto“ über die Systemauswahl `<input type=file accept=image/*>`, Entfernen mit Rückfrage, Vollbildansicht per Antippen), Einbindung in `detail()` in `src/ui/toursView.ts`, Stile am Ende von `src/ui/styles.css`, Tests `tests/photos.test.ts`.
+- Unsicherheiten: (1) Ob die Systemauswahl in der Android-WebView Kamera und Galerie anbietet und ohne zusätzliche CAMERA-Berechtigung funktioniert, ist ungeprüft. (2) `createImageBitmap`/Canvas sind nicht automatisch getestet (nur Browser/WebView); HEIC-Fotos können je nach WebView scheitern (Fehlermeldung wird angezeigt). (3) Fotos im Import-Dialog und in der Bearbeitungsmaske sind noch nicht umgesetzt (Foto-Verwaltung nur in der Detailansicht). (4) Fotos sind noch nicht im Backup/GPX (Phase 8).
+
 ## Aktuell in Arbeit
-- Nichts offen im Code. Wartet auf CI-Lauf und Gerätetest der drei Vorarbeiten, danach Phase 6.
+- Phase 6: Fotos umgesetzt (siehe oben); offen sind Gerätetest sowie ggf. Fotos beim Import.
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
