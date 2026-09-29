@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a (Web-Teil der GPS-Aufnahme) und 5b (Android-Projekt, Kotlin-Plugin, Debug-APK aus der CI) implementiert, CI grün; Gerätetests stehen aus.
+Stand: 29.09.2026 – Phasen 1–6 und Material-3-Oberfläche umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -72,7 +72,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Unsicherheiten: (1) Ob die Systemauswahl in der Android-WebView Kamera und Galerie anbietet und ohne zusätzliche CAMERA-Berechtigung funktioniert, ist ungeprüft. (2) `createImageBitmap`/Canvas sind nicht automatisch getestet (nur Browser/WebView); HEIC-Fotos können je nach WebView scheitern (Fehlermeldung wird angezeigt). (3) Fotos im Import-Dialog (`createStagedPhotos` in `src/ui/photosSection.ts`, Übernahme nach dem Speichern der Tour; schlägt das Speichern der Fotos fehl, bleibt die Tour erhalten und der Nutzer wird auf die Detailansicht verwiesen): CI-grün abzuwarten, Gerät ungetestet. Nicht im Bearbeiten-Formular (Fotos dort nur in der Detailansicht) und nicht bei manuell angelegten Touren/Aufnahmen (dort ebenfalls über die Detailansicht). (4) Fotos sind noch nicht im Backup/GPX (Phase 8).
 
 ## Aktuell in Arbeit
-- Phase 6: Fotos umgesetzt (siehe oben); offen sind Gerätetest sowie ggf. Fotos beim Import.
+- Nichts offen im Code. Phase 6 abgeschlossen. Nächster Schritt: Phase 7 (Vorschlag: zuerst Suche über Tourname/Notizen und Filter Jahr/„Letzte Touren“, danach Länderzuordnung mit gebündelten Ländergrenzen, Natural Earth; Umfang vorher mit dem Nutzer abstimmen).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -87,7 +87,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 2. Nutzer: Gerätetests nach `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart); Ergebnisse dort eintragen.
 3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
 4. Vor Phase 6 (umgesetzt, Gerätetest offen): GPX-Export unter Android, Live-Distanz, laufende Aufnahme nicht als 0-km-Tour.
-5. Phase 6: Fotos, Notizen, Detailansicht.
+5. Phase 6: erledigt (Fotos, Notizen, Detailansicht).
 6. Phase 7: Suche, Filter, Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
 7. Phase 9: unabhängiger Testdurchlauf.
 8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
