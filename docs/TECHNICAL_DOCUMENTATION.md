@@ -50,5 +50,13 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 - Höchstgeschwindigkeit nur aus Teilstücken mit mindestens 1 s Abstand.
 - Ohne Zeitstempel: Dauer und Geschwindigkeiten 0, Datum-Vorschlag ist das heutige Datum.
 
+## Backup und Wiederherstellen (Phase 8a)
+- Module: `src/backup/zip.ts` (eigener ZIP-Leser/-Schreiber ohne Abhängigkeit: Methoden stored/deflate, CRC-32 bei jedem Lesen geprüft, Lesen per `Blob.slice` ohne die ganze Datei zu laden; kein ZIP64, keine Verschlüsselung), `format.ts` (Format, Prüfung/Bereinigung aller Felder), `export.ts` (`createBackup`, `hasOpenRecording`), `import.ts` (`readBackup` prüft vollständig ohne zu schreiben, `applyBackup`), `settings.ts` (gesicherte Einstellungen, letzter Backup-Zeitpunkt). Oberfläche: `src/ui/backupPanel.ts` (Einstellungen → Sicherung), Datei-Ausgabe `downloadBlob` in `src/ui/download.ts` (Android: in 3-MB-Stücken in den App-Cache, dann Teilen-Menü).
+- Warum kein ZIP-Paket: npm ist in der Entwicklungsumgebung blockiert, ein nicht prüfbares Paket sollte nicht die Datensicherung tragen. Das Modul ist klein und wird gegen Pythons `zipfile` und die Tests in `tests/zip.test.ts` geprüft.
+- **Ersetzen:** Kategorien und Meta aus dem Backup werden geschrieben, dann tourweise (je Tour eine Transaktion: Tour, Trackpunkte, Waypoints, Fotos; bestehende Daten derselben Kennung werden ersetzt), **zuletzt** werden Touren und Kategorien entfernt, die nicht im Backup sind. Abweichung vom Vorschlag „ganz oder gar nicht“: Das Backup kann viele Trackpunkte enthalten, die nicht in einer einzigen IndexedDB-Transaktion im Speicher gehalten werden sollen. Ausgleich: Nichts wird gelöscht, bevor alles geschrieben ist; bei einem Abbruch bleiben bisherige Daten erhalten und derselbe Vorgang kann mit der Datei wiederholt werden.
+- **Zusammenführen:** Nur Touren mit unbekannter Kennung werden ergänzt (samt Track, Waypoints, Fotos); bestehende Touren bleiben unverändert. Kategorien: gleiche Kennung → vorhandene; sonst gleicher Name (ohne Groß-/Kleinschreibung) → vorhandene; sonst neu, ans Ende der Reihenfolge.
+- Speicherwunsch: `navigator.storage.persist()` beim Start (`src/main.ts`), Status in der Sicherung-Karte.
+- Grenzen: Backup nicht verschlüsselt; höchstens 65.534 Dateien und 4 GB je ZIP; Fotos werden für die Prüfsumme einzeln in den Speicher gelesen, Tracks tourweise; Grenzen bei sehr großen Backups auf dem Gerät nicht gemessen.
+
 ## Nicht umgesetzt
 - Oberfläche für Import/Export, Dateiauswahl, Teilen unter Android, Kompression großer Tracks, Import anderer Formate (TCX, KML, FIT).

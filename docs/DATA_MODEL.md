@@ -31,7 +31,16 @@ Zeiten: Unix-Millisekunden UTC. Tourdatum `date`: "YYYY-MM-DD".
 - Automatisch berechnet wird nur bei `undefined`; ein manuell gesetztes Land wird nie überschrieben. Laufende/unterbrochene Aufnahmen werden übersprungen, bis sie abgeschlossen sind. Eine Ortsänderung bei manuellen Touren setzt ein automatisches Land auf `undefined` zurück (Neuberechnung), ein manuelles bleibt.
 - `assignCountries` ändert `updatedAt` nicht; eine manuelle Wahl über `setTourCountry` schon.
 
+## Backup-Format (Phase 8a)
+ZIP-Datei `travelbook-backup-JJJJ-MM-TT.zip`; **keine Änderung am Datenbankschema** (Version 1 bleibt). Inhalt:
+- `manifest.json`: `format: "travelbook-backup"`, `version: 1`, `createdAt` (Unix-ms), `counts` (categories, tours, trackPoints, waypoints, photos), `settings` (Schlüssel → Text, nur `gpx-tracker.theme` und `gpx-tracker.mapMode`).
+- `data/categories.json`, `data/tours.json`, `data/waypoints.json`, `data/photos.json` (Metadaten ohne Bild), `data/meta.json`: Tabellen als JSON-Listen; Felder wie in `src/db/types.ts`.
+- `data/tracks/<tourId>.json`: Trackpunkte einer Tour (ohne `tourId`), nur für Touren mit Punkten.
+- `photos/<photoId>.<jpg|png|webp|gif|bin>`: Fotobytes unverändert.
+- Regeln: Kennungen nur `[A-Za-z0-9_-]{1,80}`; Formatversionen > 1 werden abgelehnt; laufende/unterbrochene Aufnahmen (`source: recording`, keine Endzeit) werden weder gesichert noch überschrieben. JSON-Dateien sind per Deflate komprimiert (wenn `CompressionStream` vorhanden), Fotos unkomprimiert.
+- Wiederherstellen prüft vor dem ersten Schreibzugriff: ZIP-Struktur, Prüfsummen aller Einträge, Felder und Wertebereiche, Verweise (Tour→Kategorie, Waypoint/Foto→Tour), höchstens 3 Fotos je Tour, Anzahlen laut Manifest.
+
 ## Noch nicht umgesetzt
 - Berechnung der Tourwerte (Distanz, Höhenmeter, Geschwindigkeit) aus Trackpunkten: Phase 3.
 - Vereinfachte Geometrie für die Kartenübersicht (zusätzliche Tabelle, Schema-Version 2): Phase 4.
-- Fotokompression, EXIF-Bereinigung, Backup/Restore. Der native Aufzeichnungspuffer (Android, SQLite) liegt außerhalb dieser Datenbank und wird in Phase 5b umgesetzt.
+- Der native Aufzeichnungspuffer (Android, SQLite) liegt außerhalb dieser Datenbank und wird in Phase 5b umgesetzt.

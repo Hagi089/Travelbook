@@ -216,3 +216,12 @@ input.swatch::-moz-color-swatch { border: 0; border-radius: 50%; }
 .photo-viewer { position: fixed; inset: 0; z-index: 100; display: flex; align-items: center; justify-content: center; background: rgba(0, 0, 0, 0.92); }
 .photo-viewer img { max-width: 100%; max-height: 100%; object-fit: contain; }
 .photo-viewer-close { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.2); color: #fff; font-size: 24px; cursor: pointer; }
+
+/* Backup (Phase 8a) */
+.backup-msg { margin: 12px 0 0; font-size: 14px; line-height: 20px; color: var(--md-sys-color-on-surface-variant); }
+.backup-msg.error { color: var(--md-sys-color-error); }
+.backup-status { margin: 4px 0 0; }
+.backup-progress { width: 100%; height: 8px; margin-top: 12px; accent-color: var(--md-sys-color-primary); }
+.backup-restore { margin-top: 16px; padding: 16px; border-radius: var(--md-sys-shape-corner-medium); background: var(--md-sys-color-surface-container); }
+.backup-restore h4 { margin: 0 0 4px; }
+.backup-restore .check { display: flex; gap: 12px; align-items: center; margin: 12px 0 0; }

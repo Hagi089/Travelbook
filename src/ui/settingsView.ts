@@ -1,6 +1,7 @@
 import type { GpxDb } from '../db-api';
 import { getMapMode, setMapMode } from '../map/mapMode';
 import { OFFLINE_MAPS_AVAILABLE, ONLINE_OSM } from '../map/tileSource';
+import { createBackupPanel } from './backupPanel';
 import { createCategoriesPanel } from './categoriesPanel';
 import { h, type View } from './dom';
 import { icon } from './icons';
@@ -39,6 +40,7 @@ function themeSegments(): HTMLElement {
 
 export function createSettingsView(db: GpxDb): View {
   const categories = createCategoriesPanel(db);
+  const backup = createBackupPanel(db);
   const el = h('section', { class: 'view scroll', hidden: '' });
 
   function render(): void {
@@ -66,6 +68,7 @@ export function createSettingsView(db: GpxDb): View {
           h('p', { class: 'muted small' }, 'Deine Touren, Tracks und Notizen werden immer lokal auf dem Gerät gespeichert und auch ohne Internet angezeigt; nur der Kartenhintergrund braucht Internet.'),
         ),
         section('Kategorien', 'Die Farbe einer Kategorie bestimmt die Darstellung der Touren auf der Karte. Änderungen werden automatisch gespeichert.', categories.el),
+        section('Sicherung', 'Backup als ZIP-Datei mit allen Touren, Tracks, Notizen, Kategorien und Fotos. Damit lassen sich die Daten auf einem neuen Gerät oder nach einer Neuinstallation wiederherstellen. Das Backup ist nicht verschlüsselt und enthält deine Aufenthaltsorte – bitte sicher aufbewahren.', backup.el),
         section('Datenschutz', 'Alle Daten bleiben auf diesem Gerät. Es gibt kein Konto, keine Cloud und keine Analyse-Dienste.'),
       ),
     );
@@ -80,6 +83,7 @@ export function createSettingsView(db: GpxDb): View {
     async onShow() {
       render();
       await categories.refresh();
+      await backup.refresh();
     },
   };
 }

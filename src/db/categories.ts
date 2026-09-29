@@ -2,7 +2,7 @@ import type { GpxDb } from './db';
 import { newId } from './db';
 import type { Category } from './types';
 
-const SEEDED_KEY = 'defaultCategoriesSeeded';
+export const SEEDED_KEY = 'defaultCategoriesSeeded';
 
 export const DEFAULT_CATEGORIES: ReadonlyArray<Pick<Category, 'id' | 'name' | 'color'>> = [
   { id: 'default-urlaub', name: 'Urlaub', color: '#e53935' },

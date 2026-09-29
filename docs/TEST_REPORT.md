@@ -33,6 +33,11 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 17 | Länderfilter „Alle Länder“ → ein Land wählen, mit Kategorie/Zeitraum/Suche kombinieren | Nur Touren des Landes; Filter erscheint nur, wenn Touren ein Land haben | |
 | 18 | Tour bearbeiten → „Land“ auf ein anderes Land / „Kein Land“ / „Automatisch“ stellen | Wert erscheint in Details und Liste; „Automatisch“ stellt das berechnete Land wieder her | |
 | 19 | Manuelle Tour mit Ort in einem anderen Land anlegen bzw. Ort ändern (Land auf „Automatisch“) | Land folgt dem Ort; ein von Hand gesetztes Land bleibt bei Ortsänderung | |
+| 20 | Einstellungen → Sicherung → „Backup erstellen“ (Android) | Teilen-Menü öffnet sich mit `travelbook-backup-JJJJ-MM-TT.zip`; Meldung mit Anzahl Touren/Fotos/Trackpunkte; „Letztes Backup“ aktualisiert | |
+| 21 | Backup-ZIP auf einem PC öffnen | Enthält `manifest.json`, `data/*.json`, `data/tracks/…`, `photos/…` | |
+| 22 | App-Daten löschen bzw. neu installieren, „Backup wiederherstellen“ → Datei wählen → „Ersetzen“ | Vorschau mit Anzahlen; danach Touren, Tracks, Notizen, Kategorien und Fotos wie vorher; Design/Kartenmodus wie gesichert | |
+| 23 | Zweites Gerät (oder nach einer neuen Tour): „Zusammenführen“ | Nur fehlende Touren kommen dazu, vorhandene bleiben unverändert | |
+| 24 | Backup während laufender Aufnahme; Datei mit anderem ZIP/beschädigt wählen | Verständliche Meldung, keine Änderung an den Daten | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |
