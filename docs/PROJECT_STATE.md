@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
+Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder, auf dem Gerät positiv getestet) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -88,8 +88,11 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Prüfung: Ländererkennung mit 27 Fällen und die Suchtests lokal mit Ersatzrunner grün (u. a. Enklaven San Marino/Lesotho, Kosovo, Nordzypern, Kanaren, Meer = null). Datenbank-Tests (`tests/country.test.ts`, Nachberechnung/Korrektur) liefen nur in der CI (Dexie hier nicht installierbar) und sind dort grün. Oberfläche nicht im Browser angesehen.
 - Unsicherheiten: (1) Vatikan und Gibraltar sind in den 50m-Daten kein eigenes Land (fallen an IT/ES). (2) Grenzen auf ca. 3 km vereinfacht: nahe Grenzen/Küsten Fehler möglich, per Korrektur behebbar. (3) Nur der Startpunkt zählt. (4) `Intl.DisplayNames` liefert deutsche Namen nur, wenn die Android-WebView es unterstützt; sonst erscheint der Code. (5) Im Browser ohne Netz kann der Chunk der Grenzdaten fehlen, bis Phase 8 (PWA-Offline) umgesetzt ist; die Android-App enthält alles lokal. (6) Weltkarte und Dashboard nutzen das Land noch nicht (mögliche Erweiterung: „Besuchte Länder“).
 
+## Phase 7b auf dem Gerät (29.09.2026)
+- Nutzer: „die Testergebnisse sind positiv“ (Länderzuordnung, Länderfilter, Korrektur). Welche der älteren offenen Gerätetests (GPX-Export, Live-Distanz, Ausblenden laufender Aufnahmen, Fotos im Import-Dialog, Langzeit-Aufnahme) damit abgedeckt sind, wurde nicht einzeln bestätigt; sie bleiben in TEST_REPORT.md offen, bis der Nutzer sie einträgt.
+
 ## Aktuell in Arbeit
-- Phase 7b umgesetzt, CI grün. Danach Phase 8 (Backup, PWA-Offline, Offline-Karte).
+- Nichts offen im Code. Phase 7 abgeschlossen. Nächster Schritt: Phase 8 (Backup JSON/ZIP inkl. Fotos, PWA-Offline mit Service Worker, Offline-Karte; `TEMP-ONLINE-MAP` zurückbauen). Umfang vorher mit dem Nutzer abstimmen (Projektanweisung: erst analysieren, nur Notwendiges ändern). Wird in einem neuen Chat begonnen.
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
