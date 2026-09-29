@@ -1,0 +1,11 @@
+{
+  "name": "GPX Tracker",
+  "short_name": "GPX Tracker",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1b5e20",
+  "lang": "de",
+  "icons": []
+}
