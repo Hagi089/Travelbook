@@ -1,7 +1,7 @@
 # TEST_REPORT
 
 ## Automatische Tests (CI)
-Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprüfung) liefen in der CI grün; Phase 7a (`tests/tour-search.test.ts`) ist lokal nur mit einem Ersatz-Testrunner geprüft (15/15), der CI-Lauf steht noch aus; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
+Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprüfung) liefen in der CI grün; Phase 7a (`tests/tour-search.test.ts`) ist lokal mit einem Ersatz-Testrunner (15/15) und in der CI (grün) geprüft; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
 
 ## Gerätetests GPS-Aufnahme (Pflicht laut ADR-001, noch NICHT durchgeführt)
 
