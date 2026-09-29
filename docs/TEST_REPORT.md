@@ -29,6 +29,10 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 13 | Daten: Suchfeld – Teil eines Tour-Namens oder ein Wort aus den Notizen eingeben; mehrere Wörter; Text löschen | Liste zeigt nur Treffer („N von M Touren“), alle Wörter müssen passen, ohne Text wieder alle | |
 | 14 | Daten: Zeitraum „Letzte 10 Touren“ und ein Jahr wählen, mit Kategorie und Suche kombinieren; Tour öffnen und zurück | Höchstens 10 neueste bzw. nur Touren des Jahres; Filter bleiben nach „Zurück“ erhalten | |
 | 15 | Neue APK installieren: App-Symbol im Launcher (eckig und rund/adaptiv) | Neues Icon (Wohnmobil-Motiv) sichtbar, nicht abgeschnitten oder verpixelt | |
+| 16 | Daten öffnen (erstes Mal nach dem Update) | Bestehende Touren zeigen ihr Land in der Liste (Startpunkt bestimmt es); Liste bleibt bedienbar | |
+| 17 | Länderfilter „Alle Länder“ → ein Land wählen, mit Kategorie/Zeitraum/Suche kombinieren | Nur Touren des Landes; Filter erscheint nur, wenn Touren ein Land haben | |
+| 18 | Tour bearbeiten → „Land“ auf ein anderes Land / „Kein Land“ / „Automatisch“ stellen | Wert erscheint in Details und Liste; „Automatisch“ stellt das berechnete Land wieder her | |
+| 19 | Manuelle Tour mit Ort in einem anderen Land anlegen bzw. Ort ändern (Land auf „Automatisch“) | Land folgt dem Ort; ein von Hand gesetztes Land bleibt bei Ortsänderung | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

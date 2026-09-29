@@ -6,7 +6,7 @@ Zeiten: Unix-Millisekunden UTC. Tourdatum `date`: "YYYY-MM-DD".
 | Tabelle | Primärschlüssel | Indizes | Inhalt |
 |---|---|---|---|
 | categories | id | sortOrder | Kategorien als eigene Entitäten (Name, Farbe, Reihenfolge, isDefault) |
-| tours | id | categoryId, date, startTime, updatedAt | Tour-Metadaten und berechnete Werte, Notizen, Quelle |
+| tours | id | categoryId, date, startTime, updatedAt | Tour-Metadaten und berechnete Werte, Notizen, Quelle, Land (`countryCode`, `countryManual`) |
 | trackPoints | [tourId+seq] | – | Trackpunkte (lat, lon, ele, time, accuracy, segment), getrennt von der Tour |
 | waypoints | id | tourId | GPX-Waypoints einer Tour |
 | photos | id | tourId | Foto als Blob plus Maße, max. 3 pro Tour |
@@ -24,6 +24,12 @@ Zeiten: Unix-Millisekunden UTC. Tourdatum `date`: "YYYY-MM-DD".
 - Aufnahmen (`source: 'recording'`): Die Tour entsteht beim Start mit `endTime = null`; die `seq` der Trackpunkte ist die vom Plugin vergebene Nummer (idempotente Übernahme). Beim Abschluss werden Zeiten, Distanz usw. aus den Punkten berechnet. Eine Aufnahme ohne Punkte wird verworfen.
 - Listen sortieren nach `date` absteigend, dann `startTime` absteigend.
 - `createdAt` einer Tour bleibt bei Änderungen unverändert, `updatedAt` wird bei jeder Änderung gesetzt.
+
+## Land (Phase 7b)
+- `countryCode?: string | null` (ISO-3166-1-Alpha-2): `undefined` = noch nicht berechnet, `null` = kein Land gefunden oder „Kein Land“ gewählt. `countryManual?: boolean`: true = vom Nutzer gesetzt.
+- Die Felder sind optional und nicht indiziert. Es gibt deshalb **keine neue Schema-Version und keine Migration**: bestehende Touren haben das Feld einfach nicht (= `undefined`) und werden beim nächsten Öffnen der Datenliste oder Tour-Details aus dem Startpunkt ergänzt (`assignCountries`). Gefiltert wird im Speicher.
+- Automatisch berechnet wird nur bei `undefined`; ein manuell gesetztes Land wird nie überschrieben. Laufende/unterbrochene Aufnahmen werden übersprungen, bis sie abgeschlossen sind. Eine Ortsänderung bei manuellen Touren setzt ein automatisches Land auf `undefined` zurück (Neuberechnung), ein manuelles bleibt.
+- `assignCountries` ändert `updatedAt` nicht; eine manuelle Wahl über `setTourCountry` schon.
 
 ## Noch nicht umgesetzt
 - Berechnung der Tourwerte (Distanz, Höhenmeter, Geschwindigkeit) aus Trackpunkten: Phase 3.

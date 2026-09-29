@@ -36,6 +36,13 @@ export interface Tour {
   endPoint: LatLon | null;
   notes: string;
   source: TourSource;
+  /**
+   * Land als ISO-3166-1-Alpha-2-Code. `undefined` = noch nicht berechnet (wird beim nächsten Öffnen der Liste aus dem
+   * Startpunkt ergänzt), `null` = kein Land gefunden bzw. „Kein Land“ gewählt.
+   */
+  countryCode?: string | null;
+  /** true = vom Nutzer gesetzt; wird nie automatisch überschrieben. */
+  countryManual?: boolean;
   createdAt: number;
   updatedAt: number;
 }

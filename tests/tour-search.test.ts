@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LATEST_TOUR_COUNT, queryTours, tourYears, type Tour } from '../src/db';
+import { LATEST_TOUR_COUNT, queryTours, tourCountryCodes, tourYears, type Tour } from '../src/db';
 
 let n = 0;
 function tour(over: Partial<Tour> = {}): Tour {
@@ -119,5 +119,31 @@ describe('tourYears', () => {
   it('ignoriert ungültige Datumswerte und liefert bei leerer Liste nichts', () => {
     expect(tourYears([tour({ date: 'kaputt' })])).toEqual([]);
     expect(tourYears([])).toEqual([]);
+  });
+});
+
+describe('Land', () => {
+  const tours = [
+    tour({ name: 'A', countryCode: 'DE', date: '2026-01-01' }),
+    tour({ name: 'B', countryCode: 'FR', date: '2026-02-01' }),
+    tour({ name: 'C', countryCode: null, date: '2026-03-01' }),
+    tour({ name: 'D', date: '2026-04-01' }), // Land noch nicht berechnet
+    tour({ name: 'E', countryCode: 'DE', date: '2025-05-01' }),
+  ];
+
+  it('filtert nach Ländercode; Touren ohne Land fallen heraus', () => {
+    expect(queryTours(tours, { country: 'DE' }).map((t) => t.name)).toEqual(['A', 'E']);
+    expect(queryTours(tours, { country: 'FR' }).map((t) => t.name)).toEqual(['B']);
+    expect(queryTours(tours, { country: 'AT' })).toEqual([]);
+  });
+
+  it('kombiniert Land mit Jahr und Suche', () => {
+    expect(queryTours(tours, { country: 'DE', year: '2026' }).map((t) => t.name)).toEqual(['A']);
+    expect(queryTours(tours, { country: 'DE', text: 'e' }).map((t) => t.name)).toEqual(['E']);
+  });
+
+  it('listet vorkommende Ländercodes ohne Duplikate und ohne leere Werte', () => {
+    expect(tourCountryCodes(tours).sort()).toEqual(['DE', 'FR']);
+    expect(tourCountryCodes([])).toEqual([]);
   });
 });

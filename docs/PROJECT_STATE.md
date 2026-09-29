@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
+Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -78,8 +78,18 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Bewusste Festlegungen: Zeitraum-Auswahl ist ein einziges Feld (Alle / Letzte 10 / Jahr), keine Kombination Jahr + Letzte 10; Jahre stammen aus den Touren der gewählten Kategorie. Suche ohne Umlaut-/Akzent-Vereinfachung („o“ findet kein „ö“).
 - App-Icon: neues Icon des Nutzers (siehe TECHNICAL_DOCUMENTATION.md „App-Icon“). Vorher gab es weder Launcher-Icons noch PWA-Icons. Unsicherheit: Hintergrund (eingebranntes Schachbrett) wurde automatisch entfernt und nur visuell geprüft; Aussehen auf dem Launcher (adaptiv/rund/Themed) ungetestet.
 
+## Phase 7a auf dem Gerät bestätigt (29.09.2026)
+- Nutzer: „alles funktioniert“ (Suche, Zeitraumfilter, neues Icon), danach Freigabe für Phase 7b.
+
+## Phase 7b (29.09.2026): Länderzuordnung – implementiert, per CI zu bestätigen, auf dem Gerät ungetestet
+- Neu: `src/geo/` (`countries.ts`: Punkt-in-Polygon, Küsten-Umkreis 20 km, Ländernamen über `Intl.DisplayNames`; `index.ts`: Laden der Grenzdaten bei Bedarf; `countryData.ts`: erzeugte Daten, 236 Codes, ca. 260 KB), `scripts/build-countries.py` (Erzeugung aus Natural Earth 50m, Quelle und Parameter in TECHNICAL_DOCUMENTATION.md), `src/db/country.ts` (`assignCountries`, `setTourCountry`), Felder `countryCode`/`countryManual` an `Tour`.
+- **Abweichung vom Vorschlag:** keine Schema-Version 2 und keine Migration. Die neuen Felder sind optional und nicht indiziert; bestehende Touren erhalten das Land beim nächsten Öffnen der Datenliste bzw. Details (`assignCountries`, ändert `updatedAt` nicht). Grund: kein Eingriff in bestehende Daten nötig, geringeres Risiko.
+- Oberfläche (`src/ui/toursView.ts`): Land in Liste und Details, Länderfilter (nur sichtbar, wenn Touren ein Land haben), Auswahl „Land“ im Bearbeiten-Formular (Automatisch / Kein Land / Liste). `src/db/tourSearch.ts`: Filter `country`, `tourCountryCodes`. `src/db/manualTour.ts`: Ortsänderung setzt ein automatisches Land zur Neuberechnung zurück.
+- Prüfung: Ländererkennung mit 27 Fällen und die Suchtests lokal mit Ersatzrunner grün (u. a. Enklaven San Marino/Lesotho, Kosovo, Nordzypern, Kanaren, Meer = null). Datenbank-Tests (`tests/country.test.ts`, Nachberechnung/Korrektur) laufen nur in der CI (Dexie hier nicht installierbar). Oberfläche nicht im Browser angesehen.
+- Unsicherheiten: (1) Vatikan und Gibraltar sind in den 50m-Daten kein eigenes Land (fallen an IT/ES). (2) Grenzen auf ca. 3 km vereinfacht: nahe Grenzen/Küsten Fehler möglich, per Korrektur behebbar. (3) Nur der Startpunkt zählt. (4) `Intl.DisplayNames` liefert deutsche Namen nur, wenn die Android-WebView es unterstützt; sonst erscheint der Code. (5) Im Browser ohne Netz kann der Chunk der Grenzdaten fehlen, bis Phase 8 (PWA-Offline) umgesetzt ist; die Android-App enthält alles lokal. (6) Weltkarte und Dashboard nutzen das Land noch nicht (mögliche Erweiterung: „Besuchte Länder“).
+
 ## Aktuell in Arbeit
-- Phase 7a umgesetzt, CI grün. Nächster Schritt: Phase 7b (Länderzuordnung mit gebündelten Ländergrenzen, Natural Earth; Dateigröße vorher messen, Schema-Version 2 mit Migration).
+- Phase 7b umgesetzt (CI-Ergebnis abwarten). Danach Phase 8 (Backup, PWA-Offline, Offline-Karte).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -95,7 +105,7 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
 4. Vor Phase 6 (umgesetzt, Gerätetest offen): GPX-Export unter Android, Live-Distanz, laufende Aufnahme nicht als 0-km-Tour.
 5. Phase 6: erledigt (Fotos, Notizen, Detailansicht).
-6. Phase 7a: Suche, Filter (umgesetzt). Phase 7b: Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
+6. Phase 7a: Suche, Filter (bestätigt). Phase 7b: Land (umgesetzt, CI/Gerät offen). Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
 7. Phase 9: unabhängiger Testdurchlauf.
 8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
 

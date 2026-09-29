@@ -127,6 +127,9 @@ export async function updateTourDetails(db: GpxDb, id: string, patch: TourDetail
       const location = patch.location ? buildLocation(patch.location.lat, patch.location.lon) : null;
       changes.startPoint = location;
       changes.endPoint = location;
+      // Ort geändert: automatisch ermitteltes Land neu berechnen lassen (vom Nutzer gesetztes bleibt).
+      const moved = location?.lat !== existing.startPoint?.lat || location?.lon !== existing.startPoint?.lon;
+      if (moved && !existing.countryManual) changes.countryCode = undefined;
     }
   }
   return updateTour(db, id, changes);

@@ -1,4 +1,5 @@
 import {
+  assignCountries,
   buildLocation,
   createManualTour,
   deleteTour,
@@ -11,12 +12,15 @@ import {
   localDateString,
   parseDecimal,
   queryTours,
+  setTourCountry,
+  tourCountryCodes,
   tourYears,
   updateTourDetails,
   type Category,
   type GpxDb,
   type Tour,
 } from '../db-api';
+import { countryName, loadCountryIndex, sortedCountryCodes } from '../geo';
 import type { Chrome } from './chrome';
 import { h, type View } from './dom';
 import { downloadText } from './download';
@@ -40,9 +44,11 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   const filter = h('select', { 'aria-label': 'Kategorie filtern' });
   const period = h('select', { 'aria-label': 'Zeitraum filtern' });
   const search = h('input', { type: 'text', placeholder: 'Suchen in Name und Notizen', 'aria-label': 'Touren suchen', autocomplete: 'off', enterkeyhint: 'search' });
+  const countryFilter = h('select', { 'aria-label': 'Land filtern' });
+  const countryBar = h('div', { class: 'toolbar', hidden: '' }, countryFilter);
   const summary = h('p', { class: 'muted small', hidden: '' });
   const list = h('div', { class: 'tour-list' });
-  const listPane = h('div', { class: 'page with-fab' }, h('div', { class: 'toolbar' }, filter, period), h('div', { class: 'toolbar' }, search), summary, list);
+  const listPane = h('div', { class: 'page with-fab' }, h('div', { class: 'toolbar' }, filter, period), h('div', { class: 'toolbar' }, search), countryBar, summary, list);
   const editorPane = h('div', { class: 'page', hidden: '' });
   const el = h('section', { class: 'view scroll', hidden: '' }, listPane, editorPane);
 
@@ -50,6 +56,8 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   let filterId = '';
   /** '' = alle, 'latest' = letzte Touren, sonst ein Jahr ("YYYY"). */
   let periodId = '';
+  /** '' = alle Länder, sonst ein Ländercode. */
+  let countryId = '';
   /** Touren der gewählten Kategorie (neueste zuerst); Suche und Zeitraum wirken darauf im Speicher. */
   let loaded: Tour[] = [];
   /** Gesetzt, wenn die Details von außen (Karte) geöffnet wurden: „Zurück“ führt dann dorthin statt zur Liste. */
@@ -90,6 +98,24 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
     const category = h('select', {}, ...categories.map((c) => h('option', { value: c.id }, c.name)));
     if (tour && categories.some((c) => c.id === tour.categoryId)) category.value = tour.categoryId;
     const date = h('input', { type: 'date', value: tour?.date ?? localDateString(Date.now()) });
+    // Land: „Automatisch“ = aus dem Startpunkt; nur beim Bearbeiten (neue manuelle Touren werden automatisch zugeordnet).
+    const initialCountry = tour?.countryManual ? (tour.countryCode ?? 'none') : 'auto';
+    const country = h('select', {});
+    const fillCountryOptions = (codes: string[]): void => {
+      const current = country.value || initialCountry;
+      country.replaceChildren(
+        h('option', { value: 'auto' }, 'Automatisch (aus dem Startpunkt)'),
+        h('option', { value: 'none' }, 'Kein Land'),
+        ...codes.map((c) => h('option', { value: c }, countryName(c))),
+      );
+      country.value = current;
+    };
+    fillCountryOptions(initialCountry !== 'auto' && initialCountry !== 'none' ? [initialCountry] : []);
+    if (tour) {
+      void loadCountryIndex()
+        .then((index) => fillCountryOptions(sortedCountryCodes(index)))
+        .catch(() => undefined); // Ländergrenzen nicht ladbar: Auswahl bleibt auf Automatisch/Kein Land/aktuelles Land beschränkt
+    }
     const notes = h('textarea', { rows: '10', placeholder: 'Notizen' });
     notes.value = tour?.notes ?? '';
     const distance = h('input', { type: 'text', inputmode: 'decimal', placeholder: 'optional', value: tour && tour.distanceM > 0 ? String(Number((tour.distanceM / 1000).toFixed(3))).replace('.', ',') : '' });
@@ -124,6 +150,9 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
         } else if (tour) {
           await updateTourDetails(db, tour.id, { name: name.value, categoryId: category.value, date: date.value, notes: notes.value });
         }
+        if (tour && country.value !== initialCountry) {
+          await setTourCountry(db, tour.id, country.value === 'auto' ? { kind: 'auto' } : country.value === 'none' ? { kind: 'none' } : { kind: 'code', code: country.value });
+        }
         await refresh();
         if (tour) await showDetail(tour.id);
         else showList();
@@ -142,6 +171,8 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
       h('label', {}, 'Name', name),
       h('label', {}, 'Kategorie', category),
       h('label', {}, 'Datum', date),
+      tour ? h('label', {}, 'Land', country) : null,
+      tour ? h('div', { class: 'muted small' }, 'Automatisch wird das Land aus dem Startpunkt bestimmt (Grenzen vereinfacht, an Küsten und Grenzen ungenau). Hier lässt es sich korrigieren.') : null,
       isManual ? h('div', { class: 'two' }, h('label', {}, 'Distanz in km', distance), h('label', {}, 'Dauer in Minuten', duration)) : null,
       isManual ? h('div', { class: 'muted' }, 'Ort (optional): Ohne Ort erscheint die Tour nur in der Liste, nicht auf der Karte. Breite: Norden positiv, Länge: Osten positiv.') : null,
       isManual ? h('div', { class: 'two' }, h('label', {}, 'Breite (Grad)', lat), h('label', {}, 'Länge (Grad)', lon)) : null,
@@ -199,7 +230,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
       'div',
       {},
       h('h2', { class: 'headline' }, tour.name),
-      h('div', { class: 'detail-meta' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'muted' }, `${cat?.name ?? 'Ohne Kategorie'} · ${formatDate(tour.date)}${isManual ? ' · manuell angelegt' : ''}`)),
+      h('div', { class: 'detail-meta' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'muted' }, `${cat?.name ?? 'Ohne Kategorie'} · ${formatDate(tour.date)}${tour.countryCode ? ` · ${countryName(tour.countryCode)}` : ''}${isManual ? ' · manuell angelegt' : ''}`)),
       kpis.length > 0 ? h('div', { class: 'kpis' }, ...kpis) : null,
       tour.startPoint && isManual ? h('div', { class: 'muted' }, `Ort: ${tour.startPoint.lat.toFixed(5)}, ${tour.startPoint.lon.toFixed(5)}`) : null,
       createPhotosSection(db, tour.id),
@@ -211,6 +242,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   }
 
   async function showDetail(id: string): Promise<void> {
+    await ensureCountries(); // z. B. Aufruf aus der Karte, bevor die Liste je geöffnet wurde
     const tour = await getTour(db, id);
     if (!tour) {
       leaveDetail();
@@ -222,7 +254,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
 
   function item(tour: Tour): HTMLElement {
     const cat = categories.find((c) => c.id === tour.categoryId);
-    const meta = [formatDate(tour.date), cat?.name ?? 'Ohne Kategorie', tour.distanceM > 0 ? formatDistance(tour.distanceM) : null, tour.source === 'manual' ? 'manuell' : null]
+    const meta = [formatDate(tour.date), cat?.name ?? 'Ohne Kategorie', tour.countryCode ? countryName(tour.countryCode) : null, tour.distanceM > 0 ? formatDistance(tour.distanceM) : null, tour.source === 'manual' ? 'manuell' : null]
       .filter((x): x is string => x !== null)
       .join(' · ');
     const b = h('button', { type: 'button', class: 'tour-item' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'tour-text' }, h('strong', {}, tour.name), h('span', { class: 'muted small' }, meta)));
@@ -240,10 +272,19 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
       ...years.map((y) => h('option', { value: y }, y)),
     );
     period.value = periodId;
+    const codes = tourCountryCodes(loaded);
+    if (countryId && !codes.includes(countryId)) countryId = '';
+    countryFilter.replaceChildren(
+      h('option', { value: '' }, 'Alle Länder'),
+      ...codes.sort((a, b) => countryName(a).localeCompare(countryName(b), 'de')).map((c) => h('option', { value: c }, countryName(c))),
+    );
+    countryFilter.value = countryId;
+    countryBar.hidden = codes.length === 0;
     const text = search.value.trim();
-    const active = text !== '' || periodId !== '';
+    const active = text !== '' || periodId !== '' || countryId !== '';
     const tours = queryTours(loaded, {
       text,
+      country: countryId || undefined,
       year: periodId && periodId !== 'latest' ? periodId : undefined,
       latest: periodId === 'latest' ? LATEST_TOUR_COUNT : undefined,
     });
@@ -258,7 +299,17 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
     }
   }
 
+  /** Ergänzt fehlende Länder. Ein Fehler (Grenzdaten nicht ladbar) blockiert die Ansicht nicht; der nächste Aufruf versucht es erneut. */
+  async function ensureCountries(): Promise<void> {
+    try {
+      await assignCountries(db);
+    } catch {
+      /* Land bleibt vorerst leer */
+    }
+  }
+
   async function refresh(): Promise<void> {
+    await ensureCountries();
     categories = await listCategories(db);
     if (filterId && !categories.some((c) => c.id === filterId)) filterId = '';
     filter.replaceChildren(h('option', { value: '' }, 'Alle Kategorien'), ...categories.map((c) => h('option', { value: c.id }, c.name)));
@@ -273,6 +324,10 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   });
   period.addEventListener('change', () => {
     periodId = period.value;
+    render();
+  });
+  countryFilter.addEventListener('change', () => {
+    countryId = countryFilter.value;
     render();
   });
   search.addEventListener('input', render);
