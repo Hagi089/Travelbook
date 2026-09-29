@@ -29,6 +29,12 @@ Stand: 29.09.2026 – Phase 4a (Oberfläche mit Online-Karte) implementiert, CI 
 ## Bekannte Probleme
 - Keine bekannten. Node-20-Warnung der GitHub Actions (unkritisch).
 
+## Arbeitsumgebung (für neue Chats)
+- In der Claude-Entwicklungsumgebung ist npm blockiert (403): Tests, Typprüfung und Build laufen dort nicht. Nachweis ist ausschließlich der GitHub-Actions-Lauf nach dem Push.
+- CI-Status lässt sich ohne Anmeldung über die GitHub-Schnittstelle abfragen: `https://api.github.com/repos/Hagi089/Travelbook/actions/runs?per_page=1` (Job-Schritte über `jobs_url`, Fehlermeldungen über `check-runs/<job-id>/annotations`).
+- Das Repository heißt `Hagi089/Travelbook` (GitHub leitet von `travelbook` weiter). Commits gehen direkt auf `main`.
+- Oberfläche kann nur der Nutzer auf dem Handy/im Browser prüfen: https://hagi089.github.io/Travelbook/
+
 ## Temporäre Lösungen (später zurückbauen)
 - Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
 - Export per Browser-Download; unter Android (Capacitor) später durch Datei-Speichern/Teilen ersetzen.
