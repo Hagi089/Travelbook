@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 2 (Datenmodell) implementiert, CI-Ergebnis siehe unten.
+Stand: 29.09.2026 – Phase 2 (Datenmodell) abgeschlossen, CI grün.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -8,12 +8,12 @@ Stand: 29.09.2026 – Phase 2 (Datenmodell) implementiert, CI-Ergebnis siehe unt
 ## Funktioniert (bestätigt)
 - Phase 1: Vite + TypeScript + Vitest, CI-Build und Pages-Deployment laufen grün, Seite ist erreichbar (Platzhaltertext).
 
-## Implementiert, Ergebnis der Tests noch offen
+## Funktioniert (Phase 2, per CI bestätigt: Tests, Typprüfung, Build, Deploy)
 - Phase 2: Dexie-Datenbank (`src/db/`), Kategorien-, Tour-, Trackpunkt-, Foto-Funktionen, Tests in `tests/db.test.ts` (siehe DATA_MODEL.md).
-- Die Tests wurden in der Entwicklungsumgebung nicht ausgeführt (npm dort blockiert). Erst der grüne CI-Lauf gilt als Nachweis.
+- Tests laufen nur in der CI (npm ist in der Entwicklungsumgebung blockiert). Testergebnisse werden bei Bedarf in TEST_REPORT.md festgehalten.
 
 ## Aktuell in Arbeit
-- Abnahme von Phase 2 über CI.
+- Nichts; Phase 3 folgt.
 
 ## Nächste Schritte
 1. Phase 3: GPX-Parser und -Export, Berechnung der Tourwerte (Distanz, Höhenmeter, Geschwindigkeit, GPS-Sprung-Markierung), Tests inkl. Roundtrip.
