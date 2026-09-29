@@ -96,7 +96,7 @@ export function buildManualTour(input: ManualTourInput): NewTour {
 }
 
 /** Legt eine Tour ohne Track an (Quelle `manual`). Trackpunkte gibt es nicht; ein Ort ist optional. */
-export function createManualTour(db: GpxDb, input: ManualTourInput): Promise<Tour> {
+export async function createManualTour(db: GpxDb, input: ManualTourInput): Promise<Tour> {
   return createTour(db, buildManualTour(input));
 }
 
