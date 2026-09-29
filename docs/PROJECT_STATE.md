@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phase 4a CI grün (Handy-Test offen); Phase 4b (Verwaltung, manuelle Touren, Tourenliste) implementiert, CI-Ergebnis siehe unten.
+Stand: 29.09.2026 – Phase 4a und 4b (Verwaltung, manuelle Touren, Datenliste, Dashboard, Tour-Details aus der Karte) implementiert, CI grün, vom Nutzer im Browser/auf dem Handy bestätigt.
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -19,7 +19,7 @@ Stand: 29.09.2026 – Phase 4a CI grün (Handy-Test offen); Phase 4b (Verwaltung
 - Phase 4a: Oberfläche (Karte, Import, Einstellungen) in `src/ui/`, Kartenquellen-Schicht in `src/map/` (ADR-002). Karte mit Leaflet und OSM-Online-Kacheln, Kategorienfilter, Tour-Auswahl mit Detailfeld, GPX-Export/Löschen, Import-Dialog mit Kontrolle vor dem Speichern, Kartenmodus-Schalter (Offline deaktiviert), Online-Hinweis.
 - Automatisch getestet sind nur Hilfsfunktionen (`tests/ui-helpers.test.ts`), nicht die Oberfläche selbst. Sie wurde noch nicht im Browser oder auf dem Handy angesehen.
 
-## Implementiert, Handy-/Browser-Test offen (Phase 4b)
+## Funktioniert (Phase 4a/4b, vom Nutzer bestätigt am 29.09.2026)
 - Kategorien-Verwaltung (anlegen, Name/Farbe ändern, löschen; bei zugeordneten Touren mit Auswahl der Zielkategorie) im Bereich „Einstellungen“ (`src/ui/categoriesPanel.ts`).
 - Neuer Tab „Touren“ (`src/ui/toursView.ts`): Liste (neueste zuerst) mit Kategorienfilter, Tour bearbeiten (Name, Kategorie, Datum, Notizen), Tour löschen, Tour manuell anlegen.
 - Manuelle Tour: Quelle `manual`, ohne Track; optional Distanz, Dauer und Ort (Breite/Länge). Nur mit Ort erscheint sie auf der Karte (als Punkt). Logik und Validierung in `src/db/manualTour.ts`, Tests in `tests/manual-tour.test.ts`.
@@ -33,7 +33,7 @@ Stand: 29.09.2026 – Phase 4a CI grün (Handy-Test offen); Phase 4b (Verwaltung
 - Nicht umgesetzt (bewusst): Ort per Kartenklick wählen, Kategorien umsortieren, Fotos in der Tourbearbeitung (Phase 6).
 
 ## Aktuell in Arbeit
-- Abnahme von Phase 4a und 4b durch Test auf dem Handy.
+- Nichts offen. Nächster Schritt ist Phase 5.
 
 ## Nächste Schritte
 1. Phase 5: Native Android-GPS (Foreground Service, eigenes Kotlin-Plugin, ADR-001), Gerätetests.
