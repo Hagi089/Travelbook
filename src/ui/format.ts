@@ -35,6 +35,6 @@ export function formatInt(n: number): string {
 
 /** Summen-Kilometer mit einer Nachkommastelle: 1234500 m → "1.234,5 km". */
 export function formatKm(m: number): string {
-  const [int = '0', dec = '0'] = (m / 1000).toFixed(1).split('.');
-  return `${formatInt(Number(int))},${dec} km`;
+  const tenths = Math.round(m / 100); // ganzzahlig runden, vermeidet Gleitkomma-Effekte bei toFixed
+  return `${formatInt(Math.floor(tenths / 10))},${tenths % 10} km`;
 }
