@@ -125,6 +125,7 @@ Zweiter Durchgang (30.09.2026, nachts, eigenständig): App aus den Quellen gebau
 8. **Einzelpunkt wurde auf Zoom 19 eingepasst** (`mapView.ts`, `tileSource.ts`): ohne Umgebung. Einpassen jetzt höchstens bis Zoom 15 (`FIT_MAX_ZOOM`); von Hand weiter hineinzoomen bleibt möglich.
 9. **Karte las bei jedem Öffnen alle Trackpunkte neu** (`mapView.ts`): gemessen 100 Touren à 3000 Punkte ≈ 1,2 s im Desktop-Browser bei jedem Öffnen. Jetzt Zwischenspeicher je Tour (ID + `updatedAt`); erneutes Öffnen < 0,1 s. Erstes Öffnen nach App-Start unverändert.
 10. **Foto-Vollbild blieb nach Zurück-Taste stehen** (`photosSection.ts`): Die Detailansicht schloss sich, das Vollbild lag danach über der Liste. Schließt sich jetzt mit.
+- CI grün für beide Korrektur-Commits (`cfded26`, `161b71c`): Vitest inkl. Datenbank-Tests, strenge Typprüfung, Build, Pages-Deploy, Debug-APK. Gerätetests (Fälle 31–35) offen.
 - Fix 3 (Update-Hinweis) im Browser nachgewiesen: mit altem `register.ts` lädt „Neu laden“ in der ersten Sitzung nicht neu, mit neuem schon.
 
 Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für später):
