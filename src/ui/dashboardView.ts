@@ -49,7 +49,6 @@ export function createDashboardView(db: GpxDb): View {
     const load = (id: string) => listTours(db, { categoryId: id });
     const [bike, hike, van] = await Promise.all([load(DASHBOARD_CATEGORY_IDS.bike), load(DASHBOARD_CATEGORY_IDS.hike), load(DASHBOARD_CATEGORY_IDS.camper)]);
     content.replaceChildren(
-      h('h2', {}, 'Dashboard'),
       activity('Fahrradtouren', find(DASHBOARD_CATEGORY_IDS.bike), bike, 'Gefahrene km', 'Fahrzeit'),
       activity('Wandern', find(DASHBOARD_CATEGORY_IDS.hike), hike, 'Zurückgelegte km', 'Wanderzeit'),
       camper('Wohnmobil', find(DASHBOARD_CATEGORY_IDS.camper), van),

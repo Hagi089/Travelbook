@@ -5,6 +5,7 @@ import { getMapMode } from '../map/mapMode';
 import { toSegments } from '../map/simplify';
 import { getTileSource } from '../map/tileSource';
 import { h, type View } from './dom';
+import { icon } from './icons';
 import { createOnlineNotice } from './onlineNotice';
 
 /** Kartenansicht. Ein Klick auf eine Route oder einen Punkt öffnet die Details der Tour (`onOpenTour`). */
@@ -37,7 +38,8 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
   function renderChips(): void {
     chips.replaceChildren();
     const add = (label: string, id: string | null, color?: string) => {
-      const b = h('button', { type: 'button', class: id === categoryFilter ? 'chip active' : 'chip' }, color ? h('span', { class: 'dot', style: `background:${color}` }) : null, label);
+      const on = id === categoryFilter;
+      const b = h('button', { type: 'button', class: on ? 'chip active' : 'chip', 'aria-pressed': String(on) }, on ? icon('check') : color ? h('span', { class: 'dot', style: `background:${color}` }) : null, label);
       b.addEventListener('click', () => {
         categoryFilter = id;
         void refresh();

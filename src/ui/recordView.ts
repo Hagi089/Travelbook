@@ -7,7 +7,13 @@ import { formatDistance, formatDuration } from './format';
 /** Abstand, in dem die Oberfläche Punkte aus dem Plugin in die Datenbank übernimmt, solange sie sichtbar ist. */
 const SYNC_INTERVAL_MS = 10_000;
 
-export function createRecordView(db: GpxDb, plugin: TrackingPlugin, onTourSaved: () => void): View & { setMessage(text: string): void } {
+export interface RecordHooks {
+  onTourSaved(): void;
+  /** Nach Start, Pause, Fortsetzen und Beenden (für das Banner „Aufnahme läuft“ in der App). */
+  onStateChange(): void;
+}
+
+export function createRecordView(db: GpxDb, plugin: TrackingPlugin, hooks: RecordHooks): View & { setMessage(text: string): void } {
   const el = h('section', { class: 'view scroll', hidden: '' });
   let status: TrackingStatus | null = null;
   let message = '';
@@ -51,13 +57,20 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, onTourSaved:
     }
     busy = false;
     render();
+    hooks.onStateChange();
   }
 
   function idleForm(): HTMLElement {
     const name = h('input', { type: 'text', placeholder: 'Name (leer = automatisch)' });
     const category = h('select', {});
-    const profile = h('select', {}, ...TRACKING_PROFILES.map((p) => h('option', { value: p.id }, `${p.label} – ${p.hint}`)));
+    const profile = h('select', {}, ...TRACKING_PROFILES.map((p) => h('option', { value: p.id }, p.label)));
     profile.value = 'normal';
+    const hint = h('div', { class: 'muted small' });
+    const showHint = () => {
+      hint.textContent = TRACKING_PROFILES.find((p) => p.id === profile.value)?.hint ?? '';
+    };
+    profile.addEventListener('change', showHint);
+    showHint();
     const start = h('button', { type: 'button', class: 'primary' }, 'Aufnahme starten');
     void listCategories(db).then((cats) => {
       category.replaceChildren(...cats.map((c) => h('option', { value: c.id }, c.name)));
@@ -70,7 +83,7 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, onTourSaved:
         await startRecording(db, plugin, { name: name.value, categoryId: category.value, profile: profile.value as TrackingProfile });
       }),
     );
-    return h('div', { class: 'card' }, h('label', {}, 'Name', name), h('label', {}, 'Kategorie', category), h('label', {}, 'Genauigkeit', profile), start);
+    return h('div', { class: 'card' }, h('label', {}, 'Name', name), h('label', {}, 'Kategorie', category), h('label', {}, 'Genauigkeit', profile), hint, start);
   }
 
   function activePanel(s: TrackingStatus): HTMLElement {
@@ -83,7 +96,7 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, onTourSaved:
       run(async () => {
         const tour = await finishRecording(db, plugin, tourId);
         message = tour ? `Gespeichert: ${tour.name} · ${formatDistance(tour.distanceM)} · ${formatDuration(tour.durationSec)}` : 'Keine Punkte aufgezeichnet – die Aufnahme wurde verworfen.';
-        if (tour) onTourSaved();
+        if (tour) hooks.onTourSaved();
       }),
     );
     return h(
@@ -105,7 +118,6 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, onTourSaved:
       h(
         'div',
         { class: 'page' },
-        h('h2', {}, 'Aufnahme'),
         s && !s.backgroundCapable
           ? h('div', { class: 'notice notice-warn' }, 'Im Browser läuft die Aufnahme nur, solange diese Seite sichtbar ist und das Display an bleibt. Für Aufnahmen bei gesperrtem Handy bitte die Android-App verwenden.')
           : null,

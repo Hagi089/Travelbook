@@ -14,6 +14,7 @@ import {
   type GpxDb,
   type Tour,
 } from '../db-api';
+import type { Chrome } from './chrome';
 import { h, type View } from './dom';
 import { downloadText } from './download';
 import { formatDate, formatDistance, formatDuration, formatElevation, formatSpeed } from './format';
@@ -26,14 +27,15 @@ function errorText(e: unknown): string {
 export interface ToursView extends View {
   /** Öffnet die Details einer Tour. `back` wird beim Verlassen der Details aufgerufen (z. B. Rückkehr zur Karte); ohne `back` geht es zurück zur Liste. */
   openTour(id: string, back?: () => void): Promise<void>;
+  /** Öffnet das Formular „Neue Tour“ (manuell anlegen). */
+  newTour(): Promise<void>;
 }
 
 /** Datenliste mit Kategorienfilter, Detailansicht, manuellem Anlegen und Bearbeiten (Name, Kategorie, Datum, Notizen). */
-export function createToursView(db: GpxDb): ToursView {
+export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   const filter = h('select', { 'aria-label': 'Kategorie filtern' });
-  const newBtn = h('button', { type: 'button', class: 'primary' }, '+ Neue Tour');
   const list = h('div', { class: 'tour-list' });
-  const listPane = h('div', { class: 'page' }, h('h2', {}, 'Daten'), h('div', { class: 'toolbar' }, filter, newBtn), list);
+  const listPane = h('div', { class: 'page with-fab' }, h('div', { class: 'toolbar' }, filter), list);
   const editorPane = h('div', { class: 'page', hidden: '' });
   const el = h('section', { class: 'view scroll', hidden: '' }, listPane, editorPane);
 
@@ -51,12 +53,19 @@ export function createToursView(db: GpxDb): ToursView {
   }
 
   function showList(): void {
+    chrome.title('Daten');
+    chrome.back(null);
+    chrome.fab(true);
     editorPane.hidden = true;
     editorPane.replaceChildren();
     listPane.hidden = false;
   }
 
-  function showPane(node: HTMLElement): void {
+  /** Zeigt eine Unterseite (Details/Formular) mit Titel und Zurück-Aktion in der App-Leiste. */
+  function showPane(node: HTMLElement, title: string, back: () => void): void {
+    chrome.title(title);
+    chrome.back(back);
+    chrome.fab(false);
     listPane.hidden = true;
     editorPane.replaceChildren(node);
     editorPane.hidden = false;
@@ -77,7 +86,7 @@ export function createToursView(db: GpxDb): ToursView {
     const lat = h('input', { type: 'text', inputmode: 'decimal', placeholder: 'z. B. 48,137', value: tour?.startPoint ? String(tour.startPoint.lat).replace('.', ',') : '' });
     const lon = h('input', { type: 'text', inputmode: 'decimal', placeholder: 'z. B. 11,575', value: tour?.startPoint ? String(tour.startPoint.lon).replace('.', ',') : '' });
     const save = h('button', { type: 'button', class: 'primary' }, 'Speichern');
-    const back = h('button', { type: 'button' }, 'Zurück');
+    const back = h('button', { type: 'button' }, 'Abbrechen');
     const msg = h('div', { class: 'status error', role: 'status' });
     const buttons = h('div', { class: 'row actions' }, save, back);
 
@@ -116,7 +125,6 @@ export function createToursView(db: GpxDb): ToursView {
     return h(
       'div',
       {},
-      h('h2', {}, tour ? 'Tour bearbeiten' : 'Neue Tour'),
       tour && !isManual
         ? h('div', { class: 'muted' }, `${formatDistance(tour.distanceM)} · ↑ ${formatElevation(tour.ascentM)} · ↓ ${formatElevation(tour.descentM)} · ${formatDuration(tour.durationSec)} (aus dem Track berechnet, nicht änderbar)`)
         : null,
@@ -136,13 +144,11 @@ export function createToursView(db: GpxDb): ToursView {
   function detail(tour: Tour): HTMLElement {
     const cat = categories.find((c) => c.id === tour.categoryId);
     const isManual = tour.source === 'manual';
-    const back = h('button', { type: 'button', class: 'ghost' }, '← Zurück');
     const edit = h('button', { type: 'button', class: 'primary' }, 'Bearbeiten');
     const actions = h('div', { class: 'row actions' }, edit);
     const msg = h('div', { class: 'status error', role: 'status' });
 
-    back.addEventListener('click', leaveDetail);
-    edit.addEventListener('click', () => showPane(editor(tour)));
+    edit.addEventListener('click', () => showPane(editor(tour), 'Tour bearbeiten', () => void showDetail(tour.id)));
 
     if (!isManual) {
       const exportBtn = h('button', { type: 'button' }, 'GPX exportieren');
@@ -181,8 +187,7 @@ export function createToursView(db: GpxDb): ToursView {
     return h(
       'div',
       {},
-      back,
-      h('h2', {}, tour.name),
+      h('h2', { class: 'headline' }, tour.name),
       h('div', { class: 'detail-meta' }, h('span', { class: 'dot', style: `background:${cat?.color ?? '#555555'}` }), h('span', { class: 'muted' }, `${cat?.name ?? 'Ohne Kategorie'} · ${formatDate(tour.date)}${isManual ? ' · manuell angelegt' : ''}`)),
       kpis.length > 0 ? h('div', { class: 'kpis' }, ...kpis) : null,
       tour.startPoint && isManual ? h('div', { class: 'muted' }, `Ort: ${tour.startPoint.lat.toFixed(5)}, ${tour.startPoint.lon.toFixed(5)}`) : null,
@@ -200,7 +205,7 @@ export function createToursView(db: GpxDb): ToursView {
       return;
     }
     if (categories.length === 0) categories = await listCategories(db);
-    showPane(detail(tour));
+    showPane(detail(tour), 'Tour', leaveDetail);
   }
 
   function item(tour: Tour): HTMLElement {
@@ -219,15 +224,13 @@ export function createToursView(db: GpxDb): ToursView {
     filter.replaceChildren(h('option', { value: '' }, 'Alle Kategorien'), ...categories.map((c) => h('option', { value: c.id }, c.name)));
     filter.value = filterId;
     const tours = await listTours(db, filterId ? { categoryId: filterId } : {});
-    list.replaceChildren(...(tours.length > 0 ? tours.map(item) : [h('p', { class: 'muted' }, 'Noch keine Touren. Importiere eine GPX-Datei oder lege oben eine Tour manuell an.')]));
+    list.replaceChildren(...(tours.length > 0 ? tours.map(item) : [h('p', { class: 'muted' }, 'Noch keine Touren. Tippe auf „Neue Tour“, um aufzuzeichnen, eine GPX-Datei zu importieren oder eine Tour manuell anzulegen.')]));
   }
 
   filter.addEventListener('change', () => {
     filterId = filter.value;
     void refresh();
   });
-
-  newBtn.addEventListener('click', () => showPane(editor(null)));
 
   return {
     el,
@@ -239,6 +242,10 @@ export function createToursView(db: GpxDb): ToursView {
     async openTour(id, back) {
       returnTo = back ?? null;
       await showDetail(id);
+    },
+    async newTour() {
+      if (categories.length === 0) categories = await listCategories(db);
+      showPane(editor(null), 'Neue Tour', showList);
     },
   };
 }

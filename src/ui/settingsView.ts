@@ -3,6 +3,8 @@ import { getMapMode, setMapMode } from '../map/mapMode';
 import { OFFLINE_MAPS_AVAILABLE, ONLINE_OSM } from '../map/tileSource';
 import { createCategoriesPanel } from './categoriesPanel';
 import { h, type View } from './dom';
+import { icon } from './icons';
+import { getThemePref, setThemePref, type ThemePref } from './theme';
 
 function section(title: string, hint: string | null, ...body: Array<HTMLElement | null>): HTMLElement {
   return h('section', { class: 'settings-section' }, h('h3', {}, title), hint ? h('p', { class: 'muted' }, hint) : null, ...body);
@@ -12,6 +14,27 @@ function section(title: string, hint: string | null, ...body: Array<HTMLElement 
 function modeOption(radio: HTMLInputElement, title: string, text: string, badge?: string): HTMLElement {
   const label = h('label', { class: radio.disabled ? 'option disabled' : 'option' }, radio, h('span', { class: 'option-text' }, h('span', { class: 'option-title' }, title, badge ? h('span', { class: 'badge' }, badge) : null), h('span', { class: 'muted small' }, text)));
   return label;
+}
+
+const THEME_OPTIONS: ReadonlyArray<{ value: ThemePref; label: string }> = [
+  { value: 'system', label: 'System' },
+  { value: 'light', label: 'Hell' },
+  { value: 'dark', label: 'Dunkel' },
+];
+
+/** Segmentierte Schaltfläche (Material 3) für Hell/Dunkel/System. */
+function themeSegments(): HTMLElement {
+  const pref = getThemePref();
+  const group = h('div', { class: 'segmented', role: 'radiogroup', 'aria-label': 'Darstellung' });
+  for (const o of THEME_OPTIONS) {
+    const input = h('input', { type: 'radio', name: 'theme', value: o.value });
+    input.checked = pref === o.value;
+    input.addEventListener('change', () => {
+      if (input.checked) setThemePref(o.value);
+    });
+    group.append(h('label', { class: 'segment' }, input, icon('check'), h('span', {}, o.label)));
+  }
+  return group;
 }
 
 export function createSettingsView(db: GpxDb): View {
@@ -32,7 +55,7 @@ export function createSettingsView(db: GpxDb): View {
     }
     el.replaceChildren(
       h('div', { class: 'page' },
-        h('h2', {}, 'Einstellungen'),
+        section('Darstellung', 'Hell, dunkel oder wie das Gerät eingestellt ist. Der Schalter oben rechts wechselt schnell zwischen Hell und Dunkel.', themeSegments()),
         section(
           'Karte',
           null,
@@ -48,6 +71,9 @@ export function createSettingsView(db: GpxDb): View {
     );
   }
   render();
+  window.addEventListener('themechange', () => {
+    if (!el.hidden) render();
+  });
 
   return {
     el,

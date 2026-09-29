@@ -5,15 +5,17 @@ import { formatDistance, formatDuration, formatElevation } from './format';
 export function createImportView(db: GpxDb, onSaved: () => void): View {
   const status = h('div', { class: 'status', role: 'status' });
   const list = h('div', { class: 'drafts' });
-  const input = h('input', { type: 'file', accept: '.gpx,.xml,application/gpx+xml,text/xml,application/xml,application/octet-stream' });
+  const input = h('input', { type: 'file', hidden: '', accept: '.gpx,.xml,application/gpx+xml,text/xml,application/xml,application/octet-stream' });
+  const pick = h('button', { type: 'button', class: 'primary' }, 'GPX-Datei auswählen');
+  pick.addEventListener('click', () => input.click());
   const el = h(
     'section',
     { class: 'view scroll', hidden: '' },
     h(
       'div',
       { class: 'page' },
-      h('h2', {}, 'GPX importieren'),
       h('p', { class: 'muted' }, 'Wähle eine GPX-Datei. Vor dem Speichern kannst du Name, Kategorie, Datum und Notizen prüfen.'),
+      pick,
       input,
       status,
       list,

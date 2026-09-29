@@ -45,8 +45,17 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 - Capacitor-Android-Projekt unter `android/` (App-ID `de.hagi089.travelbook`), Kotlin-Plugin `Tracking` (`TrackingStore` SQLite-Puffer, `TrackingService` Foreground Service Typ location, `TrackingPlugin`), Workflow `.github/workflows/android.yml` (Artifact `travelbook-debug-apk`, ca. 4,5 MB). Details: ARCHITECTURE.md (Umsetzung ADR-001), TECHNICAL_DOCUMENTATION.md.
 - Nachgewiesen nur: Gradle-Build und Kompilierung in der CI. NICHT nachgewiesen: Start der App auf dem Handy, Berechtigungsdialoge, Aufnahme bei gesperrtem Display, Wiederaufnahme, Verhalten je Hersteller.
 
+## UI-Überarbeitung nach Material Design 3 (29.09.2026; lokal im Browser mit Screenshots und Ablauftests geprüft, auf dem Handy noch nicht bestätigt)
+- Navigation: Navigationsleiste mit 4 Zielen (Karte, Daten, Dashboard, Einstellungen), obere App-Leiste mit Titel, Zurück-Pfeil (nur auf Unterseiten) und Hell/Dunkel-Schalter. „Aufnahme“ und „Import“ sind keine Tabs mehr, sondern Unterseiten von „Daten“: Der Extended FAB „Neue Tour“ (nur in der Datenliste) öffnet ein Bottom Sheet mit „Aufnahme starten“ (bzw. „Laufende Aufnahme öffnen“), „GPX importieren“ und „Manuell anlegen“. Läuft eine Aufnahme, zeigt ein Banner unter der App-Leiste auf allen Seiten „Aufnahme läuft · Zeit“; Antippen öffnet die Aufnahme.
+- Android-Zurück-Taste: Unterseiten (Aufnahme, Import, Tour-Details, Formulare) legen einen History-Eintrag an; die Systemtaste löst die Zurück-Aktion aus (`src/ui/chrome.ts`). Verlässt man eine Unterseite über die Navigationsleiste, bleibt ein Eintrag stehen und kostet einmal einen zusätzlichen Zurück-Druck (bewusst einfach gehalten).
+- Theme: `src/ui/theme.css` (Farbrollen `--md-sys-color-*` hell und dunkel, Formen), `src/ui/theme.ts` (System/Hell/Dunkel, gespeichert unter dem `localStorage`-Schlüssel `gpx-tracker.theme`), Inline-Skript in `index.html` gegen Aufblitzen, segmentierte Schaltfläche unter Einstellungen → Darstellung. Dunkle Karte: OSM-Kacheln werden per CSS-Filter invertiert, Routen bleiben unverändert.
+- Komponenten: `src/ui/styles.css` (Buttons, Textfelder, Karten, Chips, Liste, Navigationsleiste, FAB, Bottom Sheet, Snackbar, Banner), `src/ui/icons.ts` (Google Material Icons, Apache 2.0), `src/ui/sheet.ts`, `src/ui/chrome.ts`. Die Überschriften `h2` in den Ansichten entfallen; der Titel steht in der App-Leiste.
+- Aus dem Tauchlogbuch übernommen: feste untere Navigation, Hell/Dunkel-Schalter oben rechts, „+“-Aktion für Neues, Kennzahl-Kacheln. Farben und Formen folgen bewusst Material 3 statt dem Blau des Tauchlogbuchs; das Grün der App bleibt.
+- Unsicherheit/Abweichungen: (1) m3.material.io ließ sich nicht als Text lesen (JavaScript-Seite); die Umsetzung folgt den Token-Namen aus Googles Material-Web-Repository und meiner Kenntnis der M3-Spezifikation. (2) Farbwerte sind von Hand aus einem Grün-Startton (#386A20) gesetzt, nicht mit dem Material Theme Builder erzeugt; Kontraste nicht per Werkzeug gemessen. (3) Textfelder haben das Label über dem Feld statt schwebend im Rahmen (M3-Abweichung, spart den Umbau der Formulare). (4) Lösch-Bestätigungen nutzen weiter den Browser-Dialog `confirm`, keinen M3-Dialog. (5) Nicht auf einem echten Android-Gerät geprüft: Navigationsleiste bei schmalen Displays (die Beschriftung „Einstellungen“ ist bei 390 px knapp), Zurück-Taste, Tastatur über dem FAB.
+- Prüfung: `tests/theme.test.ts` (CI). Zusätzlich lokal (nicht im Repository): App mit In-Memory-Datenbankersatz in Chromium, Screenshots hell/dunkel bei 390 px und 20 Ablaufprüfungen (Theme, Zurück, Sheet, Banner); die Karte war dabei ein Platzhalter.
+
 ## Aktuell in Arbeit
-- Nichts offen im Code. Wartet auf Gerätetests des Nutzers.
+- Nichts offen im Code. Wartet auf Gerätetests und Sichtprüfung der neuen Oberfläche durch den Nutzer.
 
 ## Nächste Schritte
 1. Gerätetests durch den Nutzer nach der Anleitung in `docs/TEST_REPORT.md` (mindestens 2 h gesperrtes Display, zwei Hersteller, App-Kill, Neustart). Ergebnisse dort eintragen; danach Fehler beheben oder ADR-001-Fallback (Transistorsoft) bewerten.
@@ -63,6 +72,7 @@ Stand: 29.09.2026 – Phase 4 abgeschlossen und vom Nutzer bestätigt. Phase 5a 
 
 ## Temporäre Lösungen (später zurückbauen)
 - Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
+- Dialoge: `window.confirm` beim Löschen (später durch M3-Dialog ersetzen).
 - Export per Browser-Download; unter Android (Capacitor) durch Datei-Speichern/Teilen ersetzen (Funktion in der WebView ungeprüft, vermutlich eingeschränkt).
 - Feste Debug-Signatur im Repository (`android/app/debug.keystore`); vor einer Veröffentlichung durch einen Release-Schlüssel ersetzen.
 

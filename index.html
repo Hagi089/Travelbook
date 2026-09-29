@@ -3,7 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#1b5e20" />
+    <meta name="theme-color" content="#f8faf0" />
+    <script>
+      /* Gespeicherte Hell/Dunkel-Wahl vor dem ersten Zeichnen setzen (siehe src/ui/theme.ts). */
+      try { var t = localStorage.getItem('gpx-tracker.theme'); if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t; } catch (e) {}
+    </script>
     <link rel="manifest" href="./manifest.webmanifest" />
     <title>GPX Tracker</title>
   </head>
