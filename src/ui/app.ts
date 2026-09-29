@@ -1,5 +1,6 @@
 import type { GpxDb } from '../db-api';
 import { h, type View } from './dom';
+import { createDashboardView } from './dashboardView';
 import { createImportView } from './importView';
 import { createMapView } from './mapView';
 import { createSettingsView } from './settingsView';
@@ -9,10 +10,11 @@ export function startApp(root: HTMLElement, db: GpxDb): void {
   const views: Record<string, View> = {
     map: createMapView(db),
     tours: createToursView(db),
+    dashboard: createDashboardView(db),
     import: createImportView(db, () => undefined),
     settings: createSettingsView(db),
   };
-  const labels: Record<string, string> = { map: 'Karte', tours: 'Touren', import: 'Import', settings: 'Einstellungen' };
+  const labels: Record<string, string> = { map: 'Karte', tours: 'Daten', dashboard: 'Dashboard', import: 'Import', settings: 'Einstellungen' };
   const nav = h('nav', { class: 'nav' });
   const buttons: Record<string, HTMLButtonElement> = {};
 

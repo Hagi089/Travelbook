@@ -8,6 +8,7 @@
 - `src/gpx/import.ts` – `prepareImport(xml, dateiname)` erzeugt pro Track einen Entwurf zur Kontrolle; `saveDraft(db, entwurf, {...})` speichert ihn. Waypoints gehören zum ersten Entwurf.
 - `src/db/manualTour.ts` – `createManualTour`, `updateTourDetails` sowie Prüfhilfen (`validateDate`, `parseDecimal`, `buildLocation`). Alle Eingaben werden geprüft (Name nicht leer, Datum existiert, Werte nicht negativ, Ort vollständig und im gültigen Bereich).
 - `src/ui/toursView.ts` (Tourenliste, Anlegen, Bearbeiten), `src/ui/categoriesPanel.ts` (Kategorien-Verwaltung, eingebettet in `settingsView.ts`).
+- `src/dashboard/stats.ts` – `activityTotals`, `placeStats` (reine Funktionen); `src/ui/dashboardView.ts` stellt sie dar.
 
 ## Berechnungsannahmen (bewusste Festlegungen, an echten Tracks zu überprüfen)
 - Höhenmeter: Änderungen unter 3 m werden als Rauschen ignoriert (`ELEVATION_THRESHOLD_M`).

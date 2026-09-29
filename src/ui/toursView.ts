@@ -23,7 +23,7 @@ export function createToursView(db: GpxDb): View {
   const filter = h('select', { 'aria-label': 'Kategorie filtern' });
   const newBtn = h('button', { type: 'button', class: 'primary' }, '+ Neue Tour');
   const list = h('div', { class: 'tour-list' });
-  const listPane = h('div', { class: 'page' }, h('h2', {}, 'Touren'), h('div', { class: 'toolbar' }, filter, newBtn), list);
+  const listPane = h('div', { class: 'page' }, h('h2', {}, 'Daten'), h('div', { class: 'toolbar' }, filter, newBtn), list);
   const editorPane = h('div', { class: 'page', hidden: '' });
   const el = h('section', { class: 'view scroll', hidden: '' }, listPane, editorPane);
 

@@ -95,3 +95,15 @@ input.swatch::-moz-color-swatch { border: 0; border-radius: 50%; }
 .tour-text strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .two input { min-width: 0; }
+
+/* Dashboard */
+h4 { margin: 16px 0 4px; font-size: 15px; }
+.kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 8px; }
+.kpi { border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+.kpi-value { font-size: 18px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.kpi-label { font-size: 13px; color: var(--muted); }
+.ranking { list-style: none; margin: 8px 0 0; padding: 0; counter-reset: rank; }
+.ranking li { counter-increment: rank; display: flex; flex-direction: column; padding: 8px 0 8px 36px; position: relative; border-top: 1px solid var(--line); }
+.ranking li:first-child { border-top: 0; }
+.ranking li::before { content: counter(rank); position: absolute; left: 0; top: 8px; width: 26px; height: 26px; border-radius: 50%; background: var(--accent); color: var(--accent-fg); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; }
+.rank-name { font-weight: 600; }

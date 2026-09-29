@@ -26,6 +26,8 @@ Stand: 29.09.2026 – Phase 4a CI grün (Handy-Test offen); Phase 4b (Verwaltung
 - Bei importierten Touren bleiben berechnete Werte unveränderlich; nur Name, Kategorie, Datum und Notizen sind änderbar.
 - Änderung an bestehendem Verhalten: `listTours` sortiert jetzt nach Datum, dann Startzeit (vorher Startzeit zuerst; manuelle Touren ohne Startzeit wären sonst immer ans Ende gerutscht).
 - Oberfläche überarbeitet: einheitliches Karten-/Formular-Design (hell/dunkel), Einstellungen in Abschnitten (Karte mit Auswahlkarten Online/Offline, Kategorien mit Farbpunkt, automatischem Speichern und Tourenzahl, Datenschutz), Tourenliste mit deutschem Datum. Im Testbrowser mit Beispieldaten geprüft (Handybreite); Kartenansicht und echte Datenbank dabei nicht beteiligt.
+- Tab „Touren“ heißt jetzt „Daten“. Neuer Tab „Dashboard“ (zwischen Daten und Import, `src/ui/dashboardView.ts`, Berechnung in `src/dashboard/stats.ts`, Tests `tests/dashboard.test.ts`): Fahrradtouren und Wandern (Anzahl, km, Zeit, Höhenmeter) sowie Wohnmobil (Anzahl Stellplätze, Top 5 besuchte Stellplätze).
+- Festlegungen Dashboard: Grundlage sind die Standardkategorien per fester ID (Fahrradfahren, Wandern, Womo-Stellplatz; Umbenennen ist unschädlich, Löschen zeigt einen Hinweis). Zeit = Summe der Gesamtdauern, Höhenmeter = Summe Aufstieg. Jede Tour in Womo-Stellplatz = ein Besuch; gleicher Name (ohne Groß-/Kleinschreibung) = gleicher Stellplatz.
 - Nicht umgesetzt (bewusst): Ort per Kartenklick wählen, Kategorien umsortieren, Fotos in der Tourbearbeitung (Phase 6).
 
 ## Aktuell in Arbeit

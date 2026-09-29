@@ -27,3 +27,14 @@ export function formatDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);
   return m ? `${m[3]}.${m[2]}.${m[1]}` : iso;
 }
+
+/** Ganze Zahl mit Punkt als Tausendertrenner: 12345 → "12.345". */
+export function formatInt(n: number): string {
+  return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+/** Summen-Kilometer mit einer Nachkommastelle: 1234500 m → "1.234,5 km". */
+export function formatKm(m: number): string {
+  const [int = '0', dec = '0'] = (m / 1000).toFixed(1).split('.');
+  return `${formatInt(Number(int))},${dec} km`;
+}
