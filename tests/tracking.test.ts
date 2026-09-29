@@ -210,7 +210,7 @@ describe('Aufnahme beenden', () => {
     const native = new FakeNative();
     const tour = await startRecording(db, native, { name: 'A', categoryId: 'default-wandern', profile: 'normal' });
     native.fix(48, 11, T0);
-    native.fix(48.001, 11, T0 + 1000);
+    native.fix(48.001, 11, T0 + 60_000);
     const done = await finishRecording(db, native, tour.id);
     expect(done!.distanceM).toBeGreaterThan(100);
   });
