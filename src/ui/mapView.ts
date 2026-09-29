@@ -1,9 +1,10 @@
-import { circleMarker, latLngBounds, map as createMap, polyline, tileLayer, type LatLngBounds, type Map as LMap, type Path, type TileLayer } from 'leaflet';
+import { circleMarker, latLngBounds, map as createMap, polyline, tileLayer, type LatLngBounds, type LayerGroup, type Map as LMap, type Path, type TileLayer } from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { getTrackPoints, listCategories, listTours, type Category, type GpxDb } from '../db-api';
 import { getMapMode } from '../map/mapMode';
 import { toSegments } from '../map/simplify';
-import { getTileSource } from '../map/tileSource';
+import { createCountryBase, type CountryBase, type CountryBaseColors } from '../map/countryLayer';
+import { getMapBackground } from '../map/tileSource';
 import { h, type View } from './dom';
 import { icon } from './icons';
 import { createOnlineNotice } from './onlineNotice';
@@ -13,25 +14,76 @@ export function createMapView(db: GpxDb, onOpenTour: (tourId: string) => void): 
   const chips = h('div', { class: 'chips' });
   const mapEl = h('div', { class: 'map' });
   const notice = createOnlineNotice(); // TEMP-ONLINE-MAP
-  const el = h('section', { class: 'view map-view', hidden: '' }, chips, notice, mapEl);
+  const OFFLINE_NOTICE = 'Offline-Karte: grobe Weltkarte aus Ländergrenzen, ohne Straßen und Orte. Funktioniert ohne Internet.';
+  const offlineNotice = h('div', { class: 'notice', role: 'status', hidden: '' }, OFFLINE_NOTICE);
+  const el = h('section', { class: 'view map-view', hidden: '' }, chips, notice, offlineNotice, mapEl);
 
   let map: LMap | null = null;
   let tiles: TileLayer | null = null;
+  let baseLayer: LayerGroup | null = null;
+  let base: CountryBase | null = null;
+  let baseAttribution = '';
+  let baseToken = 0;
+  let baseState: 'none' | 'loading' | 'ready' = 'none';
   let lines: Path[] = [];
   let categoryFilter: string | null = null;
   let fittedKey = '';
   let token = 0;
 
+  /** Farben der Offline-Weltkarte aus den CSS-Variablen `--map-*` (hell/dunkel, siehe styles.css). */
+  function baseColors(): CountryBaseColors {
+    const css = getComputedStyle(mapEl);
+    return { land: css.getPropertyValue('--map-land').trim() || '#eef1e4', border: css.getPropertyValue('--map-border').trim() || '#9aa79a' };
+  }
+
+  function clearBase(): void {
+    baseToken++;
+    baseLayer?.remove();
+    baseLayer = null;
+    base = null;
+    baseState = 'none';
+    if (baseAttribution) map?.attributionControl.removeAttribution(baseAttribution);
+    baseAttribution = '';
+  }
+
   function applyTileSource(): void {
     if (!map) return;
+    const activeMap = map;
+    const bg = getMapBackground(getMapMode());
+    if (bg.kind === 'countries' && baseState !== 'none') return; // Offline-Weltkarte steht schon bzw. wird gerade geladen
     tiles?.remove();
     tiles = null;
-    const src = getTileSource(getMapMode());
-    notice.hidden = !src?.requiresInternet; // TEMP-ONLINE-MAP
-    if (src) {
-      tiles = tileLayer(src.urlTemplate, { attribution: src.attribution, maxZoom: src.maxZoom }).addTo(map);
+    clearBase();
+    notice.hidden = bg.kind !== 'tiles'; // TEMP-ONLINE-MAP
+    offlineNotice.hidden = bg.kind !== 'countries';
+    mapEl.classList.toggle('offline-base', bg.kind === 'countries');
+    if (bg.kind === 'tiles') {
+      tiles = tileLayer(bg.source.urlTemplate, { attribution: bg.source.attribution, maxZoom: bg.source.maxZoom }).addTo(activeMap);
+      return;
     }
+    const mine = baseToken;
+    baseState = 'loading';
+    offlineNotice.textContent = OFFLINE_NOTICE;
+    offlineNotice.classList.remove('notice-warn');
+    baseAttribution = bg.base.attribution;
+    activeMap.attributionControl.addAttribution(baseAttribution);
+    createCountryBase(activeMap, baseColors())
+      .then((created) => {
+        if (mine !== baseToken || map !== activeMap) return; // Modus wurde inzwischen gewechselt
+        base = created;
+        baseLayer = created.layer.addTo(activeMap);
+        baseState = 'ready';
+      })
+      .catch((e: unknown) => {
+        if (mine !== baseToken) return;
+        baseState = 'none'; // nächster Besuch der Karte versucht es erneut
+        offlineNotice.textContent = `Die Ländergrenzen für die Offline-Karte konnten nicht geladen werden (${e instanceof Error ? e.message : String(e)}). Deine Tracks werden weiterhin angezeigt.`;
+        offlineNotice.classList.add('notice-warn');
+      });
   }
+
+  // Farbwechsel (hell/dunkel) auch für die Offline-Weltkarte übernehmen.
+  window.addEventListener('themechange', () => base?.restyle(baseColors()));
 
   let categories: Category[] = [];
 

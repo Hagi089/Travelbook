@@ -64,5 +64,10 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 - Tests: `tests/sw.test.ts` führt die Vorlage mit Attrappen für Cache/Netz aus (Installation, Fehlschlag, Aufräumen, Warten auf Freigabe, Offline-Auslieferung, fremde Herkunft, Netzfehler). Nicht automatisch getestet: echtes Verhalten im Browser (Installation, Update-Ablauf).
 - Bekannte Grenzen: Das Neuladen nach „Neu laden“ ist erst mit dem nächsten Start der Installation vollständig belegt (siehe TEST_REPORT.md). Kein eigener Installations-Knopf (der Browser bietet „Zur Startseite hinzufügen“). Ob iOS/Safari sich gleich verhält, ist nicht geprüft.
 
+## Offline-Weltkarte (Phase 8c, Stufe 1)
+- Dateien: `src/map/tileSource.ts` (`getMapBackground`, `OFFLINE_COUNTRIES`), `src/map/countryShapes.ts` (reine Umrechnung der Grenzdaten in Leaflet-Koordinaten, getestet), `src/map/countryLayer.ts` (Canvas-Ebene `country-base`, z-Index 190, nicht interaktiv), Einbindung in `src/ui/mapView.ts` (`applyTileSource`), Farben über CSS-Variablen `--map-ocean/--map-land/--map-border` in `styles.css` (hell/dunkel, Wechsel über das Ereignis `themechange`).
+- Verhalten: Offline-Modus zeichnet Land auf Meeresfarbe, Hinweisleiste „Offline-Karte: grobe Weltkarte …“, Attribution „Natural Earth“. Die Ebene wird beim Besuch der Karte nur einmal aufgebaut und beim Moduswechsel entfernt; schlägt das Laden der Grenzdaten fehl, erscheint ein Hinweis, die Touren bleiben sichtbar und der nächste Besuch versucht es erneut.
+- Grenzen: Kein Maßstab-Limit (bei starkem Zoom sind nur Flächen sichtbar); keine Straßen/Orte; Grenzen ca. 3 km vereinfacht; die Ebene wird nur einmal pro Weltkopie gezeichnet (`worldCopyJump` springt zurück). Die Darstellung wurde nicht in einem Browser gesehen (Leaflet ist hier nicht installierbar); geprüft sind nur die Datenumrechnung (`tests/country-shapes.test.ts`) und die Typen gegen eine Attrappe.
+
 ## Nicht umgesetzt
 - Oberfläche für Import/Export, Dateiauswahl, Teilen unter Android, Kompression großer Tracks, Import anderer Formate (TCX, KML, FIT).

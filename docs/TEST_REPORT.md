@@ -41,6 +41,9 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 25 | Webseite (https://hagi089.github.io/Travelbook/) einmal online öffnen, kurz warten, dann Flugmodus und Seite neu laden bzw. aus dem Startbildschirm öffnen | App startet ohne Netz, Touren/Daten sichtbar, Ländername in der Liste (Länderdaten geladen); Kartenhintergrund fehlt (bis 8c) | |
 | 26 | Nach einer neuen Version (nächster Deploy) App öffnen | Hinweis „Neue Version verfügbar“ mit „Neu laden“; nach Antippen lädt die App neu und zeigt die neue Version; ohne Antippen bleibt die laufende Sitzung unberührt | |
 | 27 | Erster Besuch mit leerem Browser-Speicher | Kein Hinweis „Neue Version“, kein unerwartetes Neuladen | |
+| 28 | Einstellungen → Karte → „Offline-Karte“, dann Karte öffnen (mit Internet) | Länder als helle Flächen auf blauem Meer, Hinweisleiste „Offline-Karte …“, Touren liegen darüber und sind antippbar; Pfeiltasten/Zoom flüssig | |
+| 29 | Wie 28 im Flugmodus; Hell/Dunkel umschalten | Karte bleibt identisch sichtbar; Farben wechseln mit dem Design (Land/Meer/Grenzen) | |
+| 30 | Zurück auf „Online-Karte“ und wieder „Offline-Karte“ | Kacheln erscheinen/verschwinden richtig, keine doppelten Ebenen, Touren bleiben oben | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

@@ -1,9 +1,9 @@
 /**
- * Kartenquellen-Schicht. Die Oberfläche kennt nur `getTileSource(mode)`, nie eine feste URL.
+ * Kartenquellen-Schicht. Die Oberfläche kennt nur `getMapBackground(mode)` bzw. `getTileSource(mode)`, nie eine feste URL.
  *
- * TEMP-ONLINE-MAP: Aktuell gibt es nur eine Online-Quelle (OpenStreetMap-Standardkacheln).
- * Für die spätere Offline-Karte: Quelle hier ergänzen, OFFLINE_MAPS_AVAILABLE auf true setzen
- * und die mit "TEMP-ONLINE-MAP" markierten Stellen zurückbauen (Liste: docs/ARCHITECTURE.md, ADR-002).
+ * - Online: OpenStreetMap-Standardkacheln (TEMP-ONLINE-MAP: nur für moderate Nutzung, siehe unten).
+ * - Offline (Phase 8c, Stufe 1): grobe Weltkarte aus den gebündelten Ländergrenzen (`src/geo/`), keine Kacheln.
+ *   Detaillierte Regionalkarten (Stufe 2) sind noch nicht umgesetzt (docs/ARCHITECTURE.md, ADR-002).
  */
 export type MapMode = 'online' | 'offline';
 
@@ -17,9 +17,6 @@ export interface TileSource {
   requiresInternet: boolean;
 }
 
-/** Solange false, ist der Offline-Modus in den Einstellungen deaktiviert. */
-export const OFFLINE_MAPS_AVAILABLE = false;
-
 // TEMP-ONLINE-MAP: OSM-Standardkacheln sind nur für moderate Nutzung gedacht (Nutzungsrichtlinie der OSM Foundation)
 // und dürfen nicht massenhaft vorgeladen werden. Für Offline-Karten eine eigene/erlaubte Quelle verwenden.
 export const ONLINE_OSM: TileSource = {
@@ -31,8 +28,30 @@ export const ONLINE_OSM: TileSource = {
   requiresInternet: true,
 };
 
-/** Liefert die Kartenquelle für den Modus oder null, wenn dafür (noch) keine Quelle existiert. */
+/** Offline-Hintergrund ohne Kacheln: Länderflächen aus den gebündelten Natural-Earth-Daten. */
+export interface CountryBase {
+  id: 'countries';
+  label: string;
+  attribution: string;
+  requiresInternet: false;
+}
+
+export const OFFLINE_COUNTRIES: CountryBase = {
+  id: 'countries',
+  label: 'Weltkarte (Länder)',
+  attribution: 'Ländergrenzen: <a href="https://www.naturalearthdata.com/">Natural Earth</a> (gemeinfrei)',
+  requiresInternet: false,
+};
+
+export type MapBackground = { kind: 'tiles'; source: TileSource } | { kind: 'countries'; base: CountryBase };
+
+/** Kartenhintergrund für den Modus. */
+export function getMapBackground(mode: MapMode): MapBackground {
+  return mode === 'offline' ? { kind: 'countries', base: OFFLINE_COUNTRIES } : { kind: 'tiles', source: ONLINE_OSM };
+}
+
+/** Liefert die Kachelquelle für den Modus oder null, wenn der Modus keine Kacheln nutzt (Offline: Länderflächen). */
 export function getTileSource(mode: MapMode): TileSource | null {
-  if (mode === 'online') return ONLINE_OSM;
-  return null; // Offline-Quelle: noch nicht vorhanden
+  const bg = getMapBackground(mode);
+  return bg.kind === 'tiles' ? bg.source : null;
 }

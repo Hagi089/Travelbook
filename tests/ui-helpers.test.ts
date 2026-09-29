@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TrackPoint } from '../src/db/types';
 import { toSegments } from '../src/map/simplify';
-import { getTileSource, ONLINE_OSM, OFFLINE_MAPS_AVAILABLE } from '../src/map/tileSource';
+import { getMapBackground, getTileSource, OFFLINE_COUNTRIES, ONLINE_OSM } from '../src/map/tileSource';
 import { formatDate, formatDistance, formatDuration, formatSpeed } from '../src/ui/format';
 
 function p(seq: number, segment = 0): TrackPoint {
@@ -32,10 +32,12 @@ describe('toSegments', () => {
 });
 
 describe('Kartenquelle', () => {
-  it('liefert online die OSM-Quelle und offline (noch) keine', () => {
+  it('liefert online die OSM-Kacheln und offline Länderflächen ohne Kacheln und ohne Internet', () => {
     expect(getTileSource('online')).toBe(ONLINE_OSM);
-    expect(OFFLINE_MAPS_AVAILABLE).toBe(false);
     expect(getTileSource('offline')).toBeNull();
+    expect(getMapBackground('online')).toEqual({ kind: 'tiles', source: ONLINE_OSM });
+    expect(getMapBackground('offline')).toEqual({ kind: 'countries', base: OFFLINE_COUNTRIES });
+    expect(OFFLINE_COUNTRIES.requiresInternet).toBe(false);
   });
 });
 

@@ -1,7 +1,7 @@
 # GPX Tracker
 
-Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 5 – lokale Datenbank, GPX-Import/-Export, Weltkarte (Online-Kacheln), Kategorien, Dashboard, GPS-Aufnahme (Android-App mit Foreground Service; im Browser nur eingeschränkt).**
-Noch keine Fotos, Offline-Karte, Backup. Die Karte braucht aktuell eine Internetverbindung. Der Android-Teil ist noch nicht auf Geräten getestet (siehe `docs/TEST_REPORT.md`).
+Persönliche GPX-Touren-App (PWA + Android via Capacitor). **Stand: Phase 8 – lokale Datenbank, GPX-Import/-Export, Weltkarte (Online-Karte oder grobe Offline-Weltkarte), Kategorien, Dashboard, Suche/Filter, Länder, Fotos, GPS-Aufnahme (Android-App mit Foreground Service; im Browser nur eingeschränkt), Backup/Wiederherstellen als ZIP inkl. Fotos, Offline-Start der Web-App (Service Worker).**
+Detaillierte Offline-Karten (Straßen/Orte) gibt es noch nicht; die Online-Karte braucht Internet. Gerätetests stehen teilweise aus (siehe `docs/TEST_REPORT.md`).
 
 ## Befehle
     npm install

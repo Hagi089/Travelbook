@@ -103,6 +103,12 @@ Variante 3: Die Oberfläche fragt nur `getTileSource(mode)` (`src/map/tileSource
 - Risiko: OSM-Standardkacheln sind nur für moderate Nutzung vorgesehen (Nutzungsrichtlinie der OSM Foundation). Für den privaten Gebrauch vertretbar, für eine breitere Veröffentlichung nicht.
 - Interimslösung für viele Tracks: Übersicht dünnt Trackpunkte zur Laufzeit aus (`src/map/simplify.ts`). Vorberechnete vereinfachte Geometrie folgt später.
 
+## Stand Phase 8c, Stufe 1 (29.09.2026): Offline-Weltkarte
+- Der Offline-Modus ist jetzt wählbar. Er nutzt **keine Kacheln**, sondern zeichnet die gebündelten Ländergrenzen (`src/geo/`, Natural Earth 1:50m, ca. 3 km vereinfacht, ca. 40.000 Punkte) als Flächen auf eine eigene Leaflet-Ebene unter den Touren (`src/map/countryShapes.ts`, `countryLayer.ts`). Ergebnis: Länder und Küsten, keine Straßen, Orte oder Gewässerdetails. Sinnvoll bis etwa Regionsmaßstab.
+- Schicht: `getMapBackground(mode)` liefert `{kind: 'tiles'}` (online) oder `{kind: 'countries'}` (offline); `getTileSource` bleibt für Kachelmodi bestehen (offline: `null`).
+- Rückbau-Liste ADR-002 – Stand: (1) erledigt (Offline-Quelle ergänzt, `OFFLINE_MAPS_AVAILABLE` entfernt, `ONLINE_OSM` bleibt, weil Online wählbar bleibt); (3) erledigt (Auswahl aktiv, Text angepasst); (4) erledigt (Test angepasst); (5) erledigt für 8b (Service Worker speichert keine Kacheln); (2) **bewusst nicht entfernt**: `onlineNotice.ts` erscheint nur im Online-Modus und bleibt, solange Online die einzige detaillierte Karte ist. Die Markierung `TEMP-ONLINE-MAP` bleibt an diesen Stellen und an der OSM-Richtlinien-Notiz in `tileSource.ts`.
+- **Stufe 2 (offen, eigene Entscheidung):** detaillierte Regionalkarten (z. B. PMTiles-Dateien, die der Nutzer importiert). Zu klären: Kartenquelle und Lizenz (ODbL/Attribution), Bibliothek für Leaflet, Speicherort (Android-Dateisystem statt IndexedDB), Größe pro Region. Bis dahin ist die Online-Karte die einzige detaillierte Karte.
+
 ## Umsetzung ADR-001 in Phase 5b (Stand 29.09.2026, noch ohne Gerätetest)
 - Lokales Capacitor-Plugin `Tracking` direkt im `android/`-Projekt (`android/app/src/main/java/de/hagi089/travelbook/tracking/`), kein eigenes Modul. App-ID `de.hagi089.travelbook`.
 - `TrackingStore`: SQLite (`SQLiteOpenHelper`, kein Room). Tabellen `recordings` (Zustand, Profil, Segment, `next_seq`) und `points`. Vergabe von `seq` und Einfügen des Punkts in einer Transaktion; `seq` wird nie zurückgesetzt, auch nicht nach dem Löschen bestätigter Punkte.

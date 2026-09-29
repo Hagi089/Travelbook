@@ -105,8 +105,14 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Behebt die Unsicherheit aus 7b (5): Der Chunk mit den Ländergrenzen wird mitgespeichert.
 - Unsicherheiten: (1) Echter Ablauf im Browser (erster Start online, danach Flugmodus, Update-Hinweis) ungetestet; Prüffälle 25–27 in TEST_REPORT.md. (2) Kartenkacheln bleiben online-only, bis 8c umgesetzt ist. (3) Der Plugin-Teil lief lokal nur gegen ein Attrappen-Verzeichnis, der echte Build läuft in der CI.
 
+## Phase 8c Stufe 1 (29.09.2026): Offline-Weltkarte – implementiert, Darstellung nicht gesehen
+- Offline-Modus in den Einstellungen wählbar: grobe Weltkarte aus den Ländergrenzen (kein Kachel-Download, keine Lizenzfrage). Dateien und Verhalten: TECHNICAL_DOCUMENTATION.md, Entscheidungsstand: ARCHITECTURE.md (Abschnitt „Stand Phase 8c“).
+- Geändert: `src/map/tileSource.ts` (`getMapBackground`, `OFFLINE_MAPS_AVAILABLE` entfernt), `src/map/mapMode.ts` (Offline-Wahl wird nicht mehr ignoriert), `src/ui/mapView.ts`, `src/ui/settingsView.ts`, `src/ui/onlineNotice.ts` (nur Text), `src/ui/styles.css`; neu `src/map/countryShapes.ts`, `src/map/countryLayer.ts`, `tests/country-shapes.test.ts`; Test in `tests/ui-helpers.test.ts` angepasst. Online-Karte und alle übrigen Funktionen unverändert.
+- Rückbau `TEMP-ONLINE-MAP`: teilweise (Begründung in ARCHITECTURE.md), Markierung bleibt an Online-Hinweis und OSM-Notiz.
+- Unsicherheiten: (1) Optik und Geschwindigkeit der Canvas-Ebene auf Handy und Browser ungesehen (Prüffälle 28–30). (2) Bei starkem Zoom nur grobe Flächen. (3) Stufe 2 (Regionalkarten) ist nicht umgesetzt und braucht eine eigene Entscheidung.
+
 ## Aktuell in Arbeit
-- Phase 8a und 8b umgesetzt; als Nächstes 8c Stufe 1 (Offline-Welt-Grundkarte, Rückbau `TEMP-ONLINE-MAP`).
+- Phase 8 (8a, 8b, 8c Stufe 1) umgesetzt; wartet auf CI-Ergebnis und Gerätetests (TEST_REPORT.md Fälle 20–30). Danach: Stufe 2 der Offline-Karte klären, Phase 9 (unabhängiger Testdurchlauf).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -122,7 +128,7 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
 4. Vor Phase 6 (umgesetzt, Gerätetest offen): GPX-Export unter Android, Live-Distanz, laufende Aufnahme nicht als 0-km-Tour.
 5. Phase 6: erledigt (Fotos, Notizen, Detailansicht).
-6. Phase 7a: Suche, Filter (bestätigt). Phase 7b: Land (umgesetzt, CI grün, Gerät offen). Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
+6. Phase 7a: Suche, Filter (bestätigt). Phase 7b: Land (bestätigt). Phase 8: Backup (8a), PWA-Offline (8b), Offline-Weltkarte Stufe 1 (8c) umgesetzt, Gerätetests offen; Stufe 2 (Regionalkarten) offen.
 7. Phase 9: unabhängiger Testdurchlauf.
 8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
 
@@ -136,7 +142,7 @@ Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/F
 - Oberfläche kann nur der Nutzer auf dem Handy/im Browser prüfen: https://hagi089.github.io/Travelbook/
 
 ## Temporäre Lösungen (später zurückbauen)
-- Online-Karte: alle Stellen mit `TEMP-ONLINE-MAP` im Code; Rückbau-Liste in ARCHITECTURE.md (ADR-002).
+- Online-Karte: Stellen mit `TEMP-ONLINE-MAP` (Online-Hinweis, OSM-Richtlinien-Notiz); Stand des Rückbaus in ARCHITECTURE.md (ADR-002, „Stand Phase 8c“).
 - Dialoge: `window.confirm` beim Löschen (später durch M3-Dialog ersetzen).
 - Export unter Android: Teilen-Menü statt „Speichern unter“ (Cache-Datei); ggf. später direkter Speicherort-Dialog.
 - Feste Debug-Signatur im Repository (`android/app/debug.keystore`); vor einer Veröffentlichung durch einen Release-Schlüssel ersetzen.

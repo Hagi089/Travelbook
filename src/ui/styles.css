@@ -229,3 +229,11 @@ input.swatch::-moz-color-swatch { border: 0; border-radius: 50%; }
 /* Update-Hinweis (Phase 8b) */
 .update-notice { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .update-notice button { color: var(--md-sys-color-inverse-primary); flex: none; }
+
+/* Offline-Weltkarte (Phase 8c) */
+.map { --map-ocean: #cfe3ee; --map-land: #f1f3e6; --map-border: #9aa79a; }
+:root[data-theme='dark'] .map { --map-ocean: #16222b; --map-land: #2b3529; --map-border: #5a685a; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .map { --map-ocean: #16222b; --map-land: #2b3529; --map-border: #5a685a; }
+}
+.map.leaflet-container.offline-base { background: var(--map-ocean); }
