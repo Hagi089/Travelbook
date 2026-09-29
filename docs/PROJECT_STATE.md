@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Stand: 29.09.2026 – Phasen 1–6 und Material-3-Oberfläche umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
+Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
 ## Repository
 - GitHub: Hagi089/Travelbook, Branch `main`. Deployment per GitHub Actions nach GitHub Pages (https://hagi089.github.io/Travelbook/).
@@ -71,8 +71,15 @@ Stand: 29.09.2026 – Phasen 1–6 und Material-3-Oberfläche umgesetzt. Auf dem
 - Neu: `src/photos/resize.ts` (`preparePhoto`: EXIF-Ausrichtung anwenden, längste Kante max. 1600 px, JPEG Qualität 0,8; EXIF-Metadaten inkl. GPS entfallen durch die Neukodierung; `fitWithin` getestet), `src/ui/photosSection.ts` (Abschnitt „Fotos“ mit Vorschau, „+ Foto“ über die Systemauswahl `<input type=file accept=image/*>`, Entfernen mit Rückfrage, Vollbildansicht per Antippen), Einbindung in `detail()` in `src/ui/toursView.ts`, Stile am Ende von `src/ui/styles.css`, Tests `tests/photos.test.ts`.
 - Unsicherheiten: (1) Ob die Systemauswahl in der Android-WebView Kamera und Galerie anbietet und ohne zusätzliche CAMERA-Berechtigung funktioniert, ist ungeprüft. (2) `createImageBitmap`/Canvas sind nicht automatisch getestet (nur Browser/WebView); HEIC-Fotos können je nach WebView scheitern (Fehlermeldung wird angezeigt). (3) Fotos im Import-Dialog (`createStagedPhotos` in `src/ui/photosSection.ts`, Übernahme nach dem Speichern der Tour; schlägt das Speichern der Fotos fehl, bleibt die Tour erhalten und der Nutzer wird auf die Detailansicht verwiesen): CI-grün abzuwarten, Gerät ungetestet. Nicht im Bearbeiten-Formular (Fotos dort nur in der Detailansicht) und nicht bei manuell angelegten Touren/Aufnahmen (dort ebenfalls über die Detailansicht). (4) Fotos sind noch nicht im Backup/GPX (Phase 8).
 
+## Phase 7a (29.09.2026): Suche und Filter – implementiert, per CI zu bestätigen, auf dem Gerät ungetestet
+- Umfang mit dem Nutzer abgestimmt: 7a = Suche + Zeitraum, 7b = Länderzuordnung (folgt nach Freigabe von 7a). „Letzte Touren“ = 10 Touren.
+- `src/db/tourSearch.ts` (`queryTours`, `tourYears`), Einbindung in `src/ui/toursView.ts` (Suchfeld, Auswahl Zeitraum, Anzeige „N von M Touren“), Stil `.toolbar input[type=text]` in `styles.css`, Tests `tests/tour-search.test.ts`. Kein Schema-Umbau, `listTours` unverändert, Karte unverändert (nur Kategorienfilter). Details: TECHNICAL_DOCUMENTATION.md.
+- Prüfung: Typprüfung der neuen Datei und 15 Tests lokal mit Ersatzrunner grün; volle Typprüfung/Vitest/Build nur in der CI (npm blockiert); Oberfläche nicht im Browser angesehen.
+- Bewusste Festlegungen: Zeitraum-Auswahl ist ein einziges Feld (Alle / Letzte 10 / Jahr), keine Kombination Jahr + Letzte 10; Jahre stammen aus den Touren der gewählten Kategorie. Suche ohne Umlaut-/Akzent-Vereinfachung („o“ findet kein „ö“).
+- App-Icon: neues Icon des Nutzers (siehe TECHNICAL_DOCUMENTATION.md „App-Icon“). Vorher gab es weder Launcher-Icons noch PWA-Icons. Unsicherheit: Hintergrund (eingebranntes Schachbrett) wurde automatisch entfernt und nur visuell geprüft; Aussehen auf dem Launcher (adaptiv/rund/Themed) ungetestet.
+
 ## Aktuell in Arbeit
-- Nichts offen im Code. Phase 6 abgeschlossen. Nächster Schritt: Phase 7 (Vorschlag: zuerst Suche über Tourname/Notizen und Filter Jahr/„Letzte Touren“, danach Länderzuordnung mit gebündelten Ländergrenzen, Natural Earth; Umfang vorher mit dem Nutzer abstimmen).
+- Phase 7a umgesetzt (CI-Ergebnis abwarten). Nächster Schritt: Phase 7b (Länderzuordnung mit gebündelten Ländergrenzen, Natural Earth; Dateigröße vorher messen, Schema-Version 2 mit Migration).
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -88,7 +95,7 @@ Stand: 29.09.2026 – Phasen 1–6 und Material-3-Oberfläche umgesetzt. Auf dem
 3. Fehler aus 1./2. beheben; bei grundsätzlichem Scheitern des eigenen Plugins ADR-001-Fallback (Transistorsoft) bewerten.
 4. Vor Phase 6 (umgesetzt, Gerätetest offen): GPX-Export unter Android, Live-Distanz, laufende Aufnahme nicht als 0-km-Tour.
 5. Phase 6: erledigt (Fotos, Notizen, Detailansicht).
-6. Phase 7: Suche, Filter, Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
+6. Phase 7a: Suche, Filter (umgesetzt). Phase 7b: Land. Phase 8: Backup, PWA-Offline, Offline-Karte (TEMP-ONLINE-MAP zurückbauen).
 7. Phase 9: unabhängiger Testdurchlauf.
 8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
 

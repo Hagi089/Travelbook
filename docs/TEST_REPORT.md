@@ -1,7 +1,7 @@
 # TEST_REPORT
 
 ## Automatische Tests (CI)
-Stand 29.09.2026: `npm test` (Vitest) und `npm run build` (Typprüfung) laufen in der CI grün; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
+Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprüfung) liefen in der CI grün; Phase 7a (`tests/tour-search.test.ts`) ist lokal nur mit einem Ersatz-Testrunner geprüft (15/15), der CI-Lauf steht noch aus; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
 
 ## Gerätetests GPS-Aufnahme (Pflicht laut ADR-001, noch NICHT durchgeführt)
 
@@ -26,6 +26,9 @@ Stand 29.09.2026: `npm test` (Vitest) und `npm run build` (Typprüfung) laufen i
 | 10 | Während der Aufnahme: „Strecke“ in der Aufnahmeansicht | Wert steigt, passt grob zur gegangenen Strecke | |
 | 11 | Während der Aufnahme: Datenliste, Karte, Dashboard ansehen | Laufende Aufnahme erscheint dort nicht (Banner „Aufnahme läuft“ bleibt) | |
 | 12 | Tour öffnen → „+ Foto“ → Foto aufnehmen bzw. aus Galerie wählen (bis 3), Foto antippen, Foto entfernen | Vorschau erscheint, Vollbild öffnet/schließt, Entfernen mit Rückfrage; Foto hochkant korrekt ausgerichtet; nach 3 Fotos verschwindet „+ Foto“; nach App-Neustart noch vorhanden |  |
+| 13 | Daten: Suchfeld – Teil eines Tournamennamens Wort aus den Notizen eingeben; mehrere Wörter; Text löschen | Liste zeigt nur Treffer („N von M Touren“), alle Wörter müssen passen, ohne Text wieder alle | |
+| 14 | Daten: Zeitraum „Letzte 10 Touren“ und ein Jahr wählen, mit Kategorie und Suche kombinieren; Tour öffnen und zurück | Höchstens 10 neueste bzw. nur Touren des Jahres; Filter bleiben nach „Zurück“ erhalten | |
+| 15 | Neue APK installieren: App-Symbol im Launcher (eckig und rund/adaptiv) | Neues Icon (Wohnmobil-Motiv) sichtbar, nicht abgeschnitten oder verpixelt | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

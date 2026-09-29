@@ -7,8 +7,11 @@ import {
   getTrackPoints,
   listCategories,
   listTours,
+  LATEST_TOUR_COUNT,
   localDateString,
   parseDecimal,
+  queryTours,
+  tourYears,
   updateTourDetails,
   type Category,
   type GpxDb,
@@ -35,13 +38,20 @@ export interface ToursView extends View {
 /** Datenliste mit Kategorienfilter, Detailansicht, manuellem Anlegen und Bearbeiten (Name, Kategorie, Datum, Notizen). */
 export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
   const filter = h('select', { 'aria-label': 'Kategorie filtern' });
+  const period = h('select', { 'aria-label': 'Zeitraum filtern' });
+  const search = h('input', { type: 'text', placeholder: 'Suchen in Name und Notizen', 'aria-label': 'Touren suchen', autocomplete: 'off', enterkeyhint: 'search' });
+  const summary = h('p', { class: 'muted small', hidden: '' });
   const list = h('div', { class: 'tour-list' });
-  const listPane = h('div', { class: 'page with-fab' }, h('div', { class: 'toolbar' }, filter), list);
+  const listPane = h('div', { class: 'page with-fab' }, h('div', { class: 'toolbar' }, filter, period), h('div', { class: 'toolbar' }, search), summary, list);
   const editorPane = h('div', { class: 'page', hidden: '' });
   const el = h('section', { class: 'view scroll', hidden: '' }, listPane, editorPane);
 
   let categories: Category[] = [];
   let filterId = '';
+  /** '' = alle, 'latest' = letzte Touren, sonst ein Jahr ("YYYY"). */
+  let periodId = '';
+  /** Touren der gewählten Kategorie (neueste zuerst); Suche und Zeitraum wirken darauf im Speicher. */
+  let loaded: Tour[] = [];
   /** Gesetzt, wenn die Details von außen (Karte) geöffnet wurden: „Zurück“ führt dann dorthin statt zur Liste. */
   let returnTo: (() => void) | null = null;
 
@@ -220,19 +230,52 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
     return b;
   }
 
+  /** Wendet Suchtext und Zeitraum auf die geladenen Touren an und zeichnet die Liste. */
+  function render(): void {
+    const years = tourYears(loaded);
+    if (periodId && periodId !== 'latest' && !years.includes(periodId)) periodId = '';
+    period.replaceChildren(
+      h('option', { value: '' }, 'Alle Zeiträume'),
+      h('option', { value: 'latest' }, `Letzte ${LATEST_TOUR_COUNT} Touren`),
+      ...years.map((y) => h('option', { value: y }, y)),
+    );
+    period.value = periodId;
+    const text = search.value.trim();
+    const active = text !== '' || periodId !== '';
+    const tours = queryTours(loaded, {
+      text,
+      year: periodId && periodId !== 'latest' ? periodId : undefined,
+      latest: periodId === 'latest' ? LATEST_TOUR_COUNT : undefined,
+    });
+    summary.hidden = !(active && loaded.length > 0);
+    summary.textContent = `${tours.length} von ${loaded.length} Touren`;
+    if (loaded.length === 0) {
+      list.replaceChildren(h('p', { class: 'muted' }, 'Noch keine Touren. Tippe auf „Neue Tour“, um aufzuzeichnen, eine GPX-Datei zu importieren oder eine Tour manuell anzulegen.'));
+    } else if (tours.length === 0) {
+      list.replaceChildren(h('p', { class: 'muted' }, 'Keine passenden Touren gefunden.'));
+    } else {
+      list.replaceChildren(...tours.map(item));
+    }
+  }
+
   async function refresh(): Promise<void> {
     categories = await listCategories(db);
     if (filterId && !categories.some((c) => c.id === filterId)) filterId = '';
     filter.replaceChildren(h('option', { value: '' }, 'Alle Kategorien'), ...categories.map((c) => h('option', { value: c.id }, c.name)));
     filter.value = filterId;
-    const tours = await listTours(db, filterId ? { categoryId: filterId } : {});
-    list.replaceChildren(...(tours.length > 0 ? tours.map(item) : [h('p', { class: 'muted' }, 'Noch keine Touren. Tippe auf „Neue Tour“, um aufzuzeichnen, eine GPX-Datei zu importieren oder eine Tour manuell anzulegen.')]));
+    loaded = await listTours(db, filterId ? { categoryId: filterId } : {});
+    render();
   }
 
   filter.addEventListener('change', () => {
     filterId = filter.value;
     void refresh();
   });
+  period.addEventListener('change', () => {
+    periodId = period.value;
+    render();
+  });
+  search.addEventListener('input', render);
 
   return {
     el,

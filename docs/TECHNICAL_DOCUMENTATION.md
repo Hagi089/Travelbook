@@ -28,6 +28,13 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 - Farben ausschließlich über `--md-sys-color-*` (theme.css); neue Komponenten dürfen keine festen Farben verwenden. Dunkel gilt bei Geräteeinstellung oder `html[data-theme=dark]`. Die beiden Dunkel-Blöcke in theme.css müssen identisch bleiben.
 - Symbole: `icon('name')` aus `src/ui/icons.ts` (Pfaddaten, per DOM-API eingefügt). Neue Symbole dort ergänzen.
 
+## Suche und Filter (Phase 7a)
+- `src/db/tourSearch.ts`: reine Funktionen `queryTours(tours, {text, year, latest})` und `tourYears(tours)`; kein Datenbankzugriff, kein Schema-Umbau. Suchtext: jedes Wort muss im Namen oder in den Notizen vorkommen (Groß-/Kleinschreibung egal, Umlaute unverändert, kein regulärer Ausdruck). `latest` kürzt nach den übrigen Bedingungen auf die neuesten N (`LATEST_TOUR_COUNT` = 10).
+- `src/ui/toursView.ts`: `refresh()` lädt die Touren der gewählten Kategorie aus der Datenbank, `render()` wendet Suche und Zeitraum im Speicher an (Auswahl „Alle Zeiträume“ / „Letzte 10 Touren“ / Jahr, Anzeige „N von M Touren“). Filterzustand bleibt beim Wechsel in die Details und zurück erhalten. Die Karte nutzt weiterhin nur den Kategorienfilter.
+
+## App-Icon
+- Quelle: Bild des Nutzers (29.09.2026, 512 × 512 px, Schachbrett-Hintergrund war ins Bild eingebrannt und wurde per Farb-/Flächenerkennung entfernt). PWA: `public/icons/` (192, 512, maskable-512 mit Rand auf `#f8faf0`, Apple-Touch, Favicon), eingetragen in `manifest.webmanifest` und `index.html`. Android: `res/mipmap-*` (Legacy quadratisch/rund, adaptives Vordergrundbild) und `mipmap-anydpi-v26` mit Hintergrundfarbe `#F8FAF0` (`values/ic_launcher_background.xml`), Verweise in `AndroidManifest.xml` (`icon`, `roundIcon`).
+
 ## Berechnungsannahmen (bewusste Festlegungen, an echten Tracks zu überprüfen)
 - Höhenmeter: Änderungen unter 3 m werden als Rauschen ignoriert (`ELEVATION_THRESHOLD_M`).
 - GPS-Sprünge: Teilstücke mit mehr als 70 m/s (nur erkennbar mit Zeitstempeln) werden aus Distanz und Höchstgeschwindigkeit herausgenommen; die Rohpunkte bleiben gespeichert.
