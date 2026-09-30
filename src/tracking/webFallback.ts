@@ -22,13 +22,15 @@ export function createWebTracking(geo: Geolocation | undefined = typeof navigato
   let segment = 0;
   let nextSeq = 0;
   let buffer: NativePoint[] = [];
+  let lastError: string | null = null;
 
-  const status = (): TrackingStatus => ({ state, recordingId, startedAt, pointCount: nextSeq, backgroundCapable: false });
+  const status = (): TrackingStatus => ({ state, recordingId, startedAt, pointCount: nextSeq, backgroundCapable: false, error: lastError });
 
   function watch(): void {
     if (!geo) throw new Error('Dieser Browser unterstützt keine Standortbestimmung.');
     watchId = geo.watchPosition(
       (pos) => {
+        lastError = null;
         buffer.push({
           seq: nextSeq++,
           segment,
@@ -39,7 +41,10 @@ export function createWebTracking(geo: Geolocation | undefined = typeof navigato
           accuracy: pos.coords.accuracy,
         });
       },
-      () => undefined, // Einzelne Fehler (kein Fix) ignorieren; die Aufnahme läuft weiter.
+      (err) => {
+        // Einzelne Fehler (kein Fix, Zeitüberschreitung) ignorieren; die Aufnahme läuft weiter. Verweigerte Freigabe melden.
+        if (err.code === err.PERMISSION_DENIED) lastError = 'Der Browser hat die Standortfreigabe verweigert – es werden keine Punkte aufgezeichnet. Bitte den Standort für diese Seite erlauben und die Aufnahme neu starten.';
+      },
       OPTIONS[profile],
     );
   }
@@ -69,6 +74,7 @@ export function createWebTracking(geo: Geolocation | undefined = typeof navigato
       segment = 0;
       nextSeq = 0;
       buffer = [];
+      lastError = null;
       try {
         watch();
       } catch (e) {

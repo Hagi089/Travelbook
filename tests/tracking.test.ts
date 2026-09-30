@@ -286,10 +286,12 @@ describe('Wiederherstellung nach App-Ende', () => {
 describe('Web-Fallback', () => {
   function fakeGeo() {
     let cb: PositionCallback | null = null;
+    let errCb: PositionErrorCallback | null = null;
     let cleared = 0;
     const geo = {
-      watchPosition: (success: PositionCallback) => {
+      watchPosition: (success: PositionCallback, error?: PositionErrorCallback | null) => {
         cb = success;
+        errCb = error ?? null;
         return 7;
       },
       clearWatch: () => {
@@ -299,7 +301,8 @@ describe('Web-Fallback', () => {
     } as unknown as Geolocation;
     const emit = (lat: number, lon: number, t: number) =>
       cb?.({ timestamp: t, coords: { latitude: lat, longitude: lon, altitude: null, accuracy: 10 } } as unknown as GeolocationPosition);
-    return { geo, emit, cleared: () => cleared };
+    const fail = (code: number) => errCb?.({ code, PERMISSION_DENIED: 1, POSITION_UNAVAILABLE: 2, TIMEOUT: 3, message: '' } as GeolocationPositionError);
+    return { geo, emit, fail, cleared: () => cleared };
   }
 
   it('meldet sich als nicht hintergrundfähig und liefert Punkte mit fortlaufender seq', async () => {
@@ -336,6 +339,21 @@ describe('Web-Fallback', () => {
     await web.start({ recordingId: 'r1', profile: 'normal' });
     await expect(web.start({ recordingId: 'r2', profile: 'normal' })).rejects.toThrow('bereits');
     expect((await web.getPendingPoints({ recordingId: 'anders', limit: 5 })).points).toEqual([]);
+  });
+
+  it('meldet eine verweigerte Standortfreigabe im Status, ignoriert aber einzelne Zeitüberschreitungen', async () => {
+    const g = fakeGeo();
+    const web = createWebTracking(g.geo);
+    await web.start({ recordingId: 'r1', profile: 'normal' });
+    g.fail(3); // Zeitüberschreitung: kein Fix, keine Meldung
+    expect((await web.getStatus()).error).toBeNull();
+    g.fail(1); // PERMISSION_DENIED
+    expect((await web.getStatus()).error).toContain('Standortfreigabe');
+    g.emit(48, 11, T0); // sobald wieder Punkte kommen, verschwindet die Meldung
+    expect((await web.getStatus()).error).toBeNull();
+    await web.stop();
+    await web.start({ recordingId: 'r2', profile: 'normal' });
+    expect((await web.getStatus()).error).toBeNull();
   });
 
   it('meldet einen Fehler, wenn der Browser keine Standortbestimmung hat', async () => {

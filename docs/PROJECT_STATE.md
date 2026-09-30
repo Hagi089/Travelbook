@@ -130,6 +130,7 @@ Zweiter Durchgang (30.09.2026, nachts, eigenständig): App aus den Quellen gebau
 
 Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für später):
 - Browser-Aufnahme: Verweigert der Nutzer die Standortabfrage erst beim Start, läuft die Aufnahme ohne Punkte weiter (keine Meldung); beim Beenden wird sie verworfen. Nur Browser-Notlösung, Android nicht betroffen.
+- (Restpunkt, inzwischen behoben: Duplikat-Warnung, Sheet-Zurück, Browser-Standort-Meldung, Design im Backup – siehe „Restpunkte“.)
 - Import-Dialog behält die zuletzt gezeigten Entwürfe beim erneuten Öffnen (gespeicherte sind gesperrt).
 - Ein GPX-Import derselben Datei zweimal legt die Tour doppelt an (keine Duplikaterkennung).
 - Bottom Sheet „Neue Tour“: Android-Zurück schließt die App statt des Sheets (kein History-Eintrag).
@@ -141,8 +142,20 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 - Kein `package-lock.json`: CI installiert je Lauf die neuesten passenden Versionen.
 - Lokal geprüft: 26 Tests (Backup-Format, Karten-Hilfen, ZIP, Service Worker) mit Ersatzrunner grün, Typprüfung von `src` gegen Platzhalter-Typen ohne Befund. Volle Prüfung nur in der CI.
 
+## Gerätetest-Rückmeldung und Entscheidungen (30.09.2026)
+- Nutzer: „schaut alles gut aus“, Gerätetests „erfolgreich“ (Phase 8 mit den Fällen 20–35). Einzelne Fälle wurden nicht getrennt bestätigt und bleiben in TEST_REPORT.md ohne Eintrag, bis der Nutzer sie einträgt.
+- **Entscheidung: Offline-Karte Stufe 2 (detaillierte Regionalkarten) ist gestrichen/zurückgestellt.** Die Online-Karte und die grobe Offline-Weltkarte genügen. Nichts verbaut: `getMapBackground` (src/map/tileSource.ts) kann später um einen weiteren Hintergrund erweitert werden.
+- Phase 9 (Testdurchlauf): als „Gesamtprüfung“ bereits erfolgt (siehe oben, Fixes 1–10).
+
+## Restpunkte aus der Gesamtprüfung (30.09.2026) – behoben, CI siehe unten, auf dem Gerät ungetestet
+1. **Doppelter GPX-Import** (`src/gpx/import.ts` `findDuplicateTour`, `src/ui/importView.ts`): Beim Einlesen einer Datei prüft die App gegen alle gespeicherten Touren (außer manuellen): gleiche Startzeit – bzw. ohne Zeitstempel gleicher Startort (≈1 m) – und Distanz auf 1 % genau (fängt Rundung beim GPX-Export ab). Bei Treffer erscheint eine Warnung auf der Entwurfskarte, der Knopf heißt „Trotzdem speichern“. Es wird nichts blockiert. Grenze: ein leicht anderer Track derselben Strecke (andere Startzeit) gilt nicht als Duplikat.
+2. **Android-Zurück im Sheet „Neue Tour“** (`src/ui/sheet.ts`, `src/ui/chrome.ts`, `src/ui/app.ts`): Das Sheet trägt sich beim Öffnen als Zurück-Aktion in die Kopfleiste ein (`chrome.back`); die Systemtaste schließt es, statt die App zu verlassen. Fläche/Escape schließen über `chrome.goBack()`, damit der History-Eintrag verschwindet; die Auswahl eines Eintrags übergibt den Eintrag an die Folgeseite (`clearBackIf`). Neue Methoden `goBack`, `clearBackIf` an `Chrome`. Unsicherheit: Ablauf mit übrig gebliebenen History-Einträgen (Unterseite über die Navigationsleiste verlassen) nur durchdacht, nicht am Gerät gesehen.
+3. **Browser-Aufnahme ohne Standortfreigabe** (`src/tracking/webFallback.ts`, `types.ts`, `recordView.ts`): Verweigert der Browser die Freigabe, zeigt die Aufnahmeansicht eine Warnung (neues optionales Feld `TrackingStatus.error`, nur der Web-Fallback setzt es; Zeitüberschreitungen bleiben still; die Meldung verschwindet, sobald wieder Punkte kommen). Android unverändert.
+4. **Design „System“ im Backup** (`src/backup/settings.ts`): Ein fehlender Eintrag gilt als Standard (Design „system“, Karte „online“) und wird so gesichert; beim Wiederherstellen setzt „system“ die Wahl des Zielgeräts zurück (Eintrag wird entfernt). Alte Backups ohne diese Werte verhalten sich wie bisher.
+- Tests: `tests/import-duplicates.test.ts` (neu), `tests/tracking.test.ts` (Standortfreigabe), `tests/backup-format.test.ts` (Einstellungen). Lokal geprüft: Einstellungen-Tests (Ersatzrunner) und Typprüfung von `src` gegen Attrappen; die übrigen Tests laufen in der CI.
+
 ## Aktuell in Arbeit
-- Phase 8 (8a, 8b, 8c Stufe 1) umgesetzt; wartet auf CI-Ergebnis und Gerätetests (TEST_REPORT.md Fälle 20–30). Danach: Stufe 2 der Offline-Karte klären, Phase 9 (unabhängiger Testdurchlauf).
+- Nichts offen im Code. Wartet auf CI-Ergebnis der Restpunkte und Gerätetests dazu (TEST_REPORT.md Fälle 36–39). Nächste mögliche Themen: Höhenrauschen-/Sprung-Schwellen an echten Tracks prüfen, Release-Signatur, M3-Dialoge statt `confirm`, `package-lock.json`.
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).

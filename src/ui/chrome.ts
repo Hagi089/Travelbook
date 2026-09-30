@@ -10,6 +10,10 @@ export interface Chrome {
   back(fn: (() => void) | null): void;
   /** Schwebenden „Neue Tour“-Button ein-/ausblenden. */
   fab(visible: boolean): void;
+  /** Löst „Zurück“ aus wie Pfeil bzw. Systemtaste (räumt dabei den History-Eintrag ab). */
+  goBack(): void;
+  /** Entfernt die Zurück-Aktion nur, wenn sie noch `fn` ist (ohne History-Änderung). */
+  clearBackIf(fn: () => void): void;
 }
 
 export interface ChromeView {
@@ -62,12 +66,18 @@ export function createChrome(onFabClick: () => void): ChromeView {
     fab(visible) {
       fabButton.hidden = !visible;
     },
+    goBack() {
+      if (depth > 0) history.back();
+      else backFn?.();
+    },
+    clearBackIf(fn) {
+      if (backFn !== fn) return;
+      backFn = null;
+      backBtn.hidden = true;
+    },
   };
 
-  backBtn.addEventListener('click', () => {
-    if (depth > 0) history.back();
-    else backFn?.();
-  });
+  backBtn.addEventListener('click', () => chrome.goBack());
 
   window.addEventListener('popstate', () => {
     if (depth > 0) depth--;

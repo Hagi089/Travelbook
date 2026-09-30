@@ -1,4 +1,4 @@
-import { GpxError, addPhoto, listCategories, prepareImport, saveDraft, type GpxDb, type ImportDraft } from '../db-api';
+import { GpxError, addPhoto, findDuplicateTour, listCategories, listTours, prepareImport, saveDraft, type GpxDb, type ImportDraft, type Tour } from '../db-api';
 import { createStagedPhotos } from './photosSection';
 import { h, type View } from './dom';
 import { formatDistance, formatDuration, formatElevation } from './format';
@@ -24,13 +24,13 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
   );
   let categorySelectOptions: Array<{ id: string; name: string }> = [];
 
-  function draftCard(draft: ImportDraft): HTMLElement {
+  function draftCard(draft: ImportDraft, duplicate: Tour | undefined): HTMLElement {
     const name = h('input', { type: 'text', value: draft.name });
     const category = h('select', {}, ...categorySelectOptions.map((c) => h('option', { value: c.id }, c.name)));
     const date = h('input', { type: 'date', value: draft.date });
     const notes = h('textarea', { rows: '3', placeholder: 'Notizen' });
     const photos = createStagedPhotos();
-    const save = h('button', { type: 'button', class: 'primary' }, 'Speichern');
+    const save = h('button', { type: 'button', class: 'primary' }, duplicate ? 'Trotzdem speichern' : 'Speichern');
     const msg = h('div', { class: 'status' });
     const s = draft.stats;
     save.addEventListener('click', async () => {
@@ -54,6 +54,7 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
       'div',
       { class: 'card' },
       h('div', { class: 'muted' }, `${draft.points.length} Punkte · ${formatDistance(s.distanceM)} · ↑ ${formatElevation(s.ascentM)} · ↓ ${formatElevation(s.descentM)} · ${formatDuration(s.durationSec)}${draft.waypoints.length ? ` · ${draft.waypoints.length} Wegpunkte` : ''}`),
+      duplicate ? h('div', { class: 'notice notice-warn' }, `Diese Tour ist vermutlich schon vorhanden: „${duplicate.name}“ (${duplicate.date}). Speichern legt sie ein zweites Mal an.`) : null,
       draft.hasTime ? null : h('div', { class: 'notice notice-warn' }, 'Die Datei enthält keine Zeitstempel. Datum bitte prüfen; Dauer und Geschwindigkeit fehlen.'),
       s.skippedJumps > 0 ? h('div', { class: 'muted' }, `${s.skippedJumps} GPS-Sprung/Sprünge werden bei den Berechnungen ignoriert (Rohdaten bleiben erhalten).`) : null,
       h('label', {}, 'Name', name),
@@ -74,8 +75,9 @@ export function createImportView(db: GpxDb, onSaved: () => void): View {
     try {
       const { drafts, warnings } = prepareImport(await file.text(), file.name);
       categorySelectOptions = await listCategories(db);
+      const existing = await listTours(db);
       status.textContent = [`${drafts.length} Tour(en) gefunden.`, ...warnings].join(' ');
-      for (const d of drafts) list.append(draftCard(d));
+      for (const d of drafts) list.append(draftCard(d, findDuplicateTour(existing, d)));
     } catch (e) {
       status.textContent = e instanceof GpxError ? `Import nicht möglich: ${e.message}` : `Fehler beim Lesen der Datei: ${e instanceof Error ? e.message : String(e)}`;
     }

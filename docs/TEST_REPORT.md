@@ -1,5 +1,8 @@
 # TEST_REPORT
 
+## Stand der Gerätetests
+Nutzerrückmeldung 30.09.2026: Phase 8 (Fälle 20–35) „erfolgreich“; einzelne Fälle nicht getrennt bestätigt. Die Ergebnisspalten bleiben leer, bis sie eingetragen werden.
+
 ## Automatische Tests (CI)
 Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprüfung) liefen in der CI grün; Phase 7a (`tests/tour-search.test.ts`) ist lokal mit einem Ersatz-Testrunner (15/15) und in der CI (grün) geprüft; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
 
@@ -49,6 +52,10 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 33 | Online-Karte öffnen, zu „Daten“ wechseln, zurück zur Karte | Kartenhintergrund bleibt stehen (kein erneutes Laden/Flackern) | |
 | 34 | Tour-Details → Foto antippen (Vollbild) → Android-Zurück-Taste | Vollbild und Details schließen sich, Liste ist sichtbar (kein Foto bleibt stehen) | |
 | 35 | Viele Touren: Karte öffnen, zu „Daten“, zurück zur Karte; Kategorie-Chip ganz rechts antippen | Zweites Öffnen sofort; gewählter Chip bleibt sichtbar | |
+| 36 | GPX-Datei importieren, speichern, dieselbe Datei erneut wählen | Warnung „vermutlich schon vorhanden“ mit Name und Datum, Knopf „Trotzdem speichern“; eine andere Datei zeigt keine Warnung | |
+| 37 | Daten → „Neue Tour“ → Android-Zurück | Nur das Sheet schließt sich, die App bleibt offen; danach zweimal Zurück verlässt die App wie gewohnt. Ebenso: Sheet öffnen → „GPX importieren“ → Zurück → Datenliste | |
+| 38 | Browser: Aufnahme starten, Standortfreigabe ablehnen | Gelbe Warnung „Standortfreigabe verweigert“ in der Aufnahme (nach höchstens ca. 10 s) | |
+| 39 | Design „System“ am Gerät, Backup erstellen; auf Gerät mit Design „Dunkel“ wiederherstellen (mit Einstellungen) | Danach folgt die App wieder dem System | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

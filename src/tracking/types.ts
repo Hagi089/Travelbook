@@ -36,6 +36,8 @@ export interface TrackingStatus {
   pointCount: number;
   /** false im Browser-Fallback: Aufnahme stoppt oder drosselt bei gesperrtem Display. */
   backgroundCapable: boolean;
+  /** Optional: Hinweis auf ein Problem während der Aufnahme (Browser-Fallback: Standortfreigabe verweigert). */
+  error?: string | null;
 }
 
 export interface TrackingPermissions {

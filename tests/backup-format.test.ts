@@ -52,14 +52,32 @@ describe('Backup-Format: Prüfung', () => {
 describe('Backup-Einstellungen', () => {
   it('behält nur bekannte Schlüssel mit erlaubten Werten', () => {
     expect(sanitizeSettings({ 'gpx-tracker.theme': 'dark', 'gpx-tracker.mapMode': 'wild', other: 'x' })).toEqual({ 'gpx-tracker.theme': 'dark' });
+    expect(sanitizeSettings({ 'gpx-tracker.theme': 'system', 'gpx-tracker.mapMode': 'online' })).toEqual({ 'gpx-tracker.theme': 'system', 'gpx-tracker.mapMode': 'online' });
   });
   it('sammelt und schreibt Einstellungen über ein Speicherobjekt', () => {
     const store = new Map<string, string>([['gpx-tracker.theme', 'light']]);
-    const storage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: string, v: string) => void store.set(k, v) };
-    expect(collectSettings(storage)).toEqual({ 'gpx-tracker.theme': 'light' });
-    expect(applySettings({ 'gpx-tracker.mapMode': 'online', 'gpx-tracker.theme': 'bad' }, storage)).toBe(1);
-    expect(store.get('gpx-tracker.mapMode')).toBe('online');
+    const storage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    };
+    expect(collectSettings(storage)).toEqual({ 'gpx-tracker.theme': 'light', 'gpx-tracker.mapMode': 'online' });
+    expect(applySettings({ 'gpx-tracker.mapMode': 'offline', 'gpx-tracker.theme': 'bad' }, storage)).toBe(1);
+    expect(store.get('gpx-tracker.mapMode')).toBe('offline');
     expect(store.get('gpx-tracker.theme')).toBe('light');
     expect(BACKUP_SETTING_KEYS).toHaveLength(2);
+  });
+  it('sichert „System“ (fehlender Eintrag) ausdrücklich und setzt es beim Wiederherstellen zurück', () => {
+    const store = new Map<string, string>([['gpx-tracker.theme', 'dark']]);
+    const storage = {
+      getItem: (k: string) => store.get(k) ?? null,
+      setItem: (k: string, v: string) => void store.set(k, v),
+      removeItem: (k: string) => void store.delete(k),
+    };
+    const fromSystemDevice = collectSettings({ getItem: () => null });
+    expect(fromSystemDevice).toEqual({ 'gpx-tracker.theme': 'system', 'gpx-tracker.mapMode': 'online' });
+    applySettings(fromSystemDevice, storage);
+    expect(store.has('gpx-tracker.theme')).toBe(false); // wieder „System“
+    expect(store.get('gpx-tracker.mapMode')).toBe('online');
   });
 });

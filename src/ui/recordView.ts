@@ -108,6 +108,7 @@ export function createRecordView(db: GpxDb, plugin: TrackingPlugin, hooks: Recor
     return h(
       'div',
       { class: 'card' },
+      s.error ? h('div', { class: 'notice notice-warn' }, s.error) : null,
       h('div', {}, s.state === 'paused' ? 'Pausiert' : 'Aufnahme läuft'),
       h('div', { class: 'muted' }, 'Zeit seit Start: ', elapsedEl),
       h('div', { class: 'muted' }, `Strecke: ${formatDistance(liveDistanceM)}`),

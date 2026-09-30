@@ -1,6 +1,6 @@
 import type { GpxDb } from '../db/db';
 import { createTour } from '../db/tours';
-import type { NewTrackPoint, NewWaypoint, Tour } from '../db/types';
+import type { LatLon, NewTrackPoint, NewWaypoint, Tour } from '../db/types';
 import { GpxError, parseGpx } from './parse';
 import { computeStats, type TrackStats } from './stats';
 
@@ -40,6 +40,27 @@ export function prepareImport(xml: string, fileName?: string): { drafts: ImportD
     };
   });
   return { drafts, warnings: parsed.warnings };
+}
+
+function samePlace(a: LatLon | null, b: LatLon | null): boolean {
+  return a !== null && b !== null && Math.abs(a.lat - b.lat) < 1e-5 && Math.abs(a.lon - b.lon) < 1e-5; // ca. 1 m
+}
+
+/**
+ * Sucht eine bereits gespeicherte Tour, die vermutlich dieselbe Aufzeichnung ist (z. B. dieselbe Datei zweimal importiert
+ * oder eine exportierte Aufnahme erneut eingelesen). Kriterien: gleiche Startzeit (bzw. ohne Zeitstempel: gleicher
+ * Startort) und Distanz auf 1 % genau – die Toleranz fängt Rundungen beim GPX-Export ab. Manuelle Touren zählen nicht.
+ * Nur ein Hinweis: Der Nutzer darf trotzdem speichern.
+ */
+export function findDuplicateTour(existing: Tour[], draft: ImportDraft): Tour | undefined {
+  const s = draft.stats;
+  return existing.find((t) => {
+    if (t.source === 'manual') return false;
+    if (Math.abs(t.distanceM - s.distanceM) > Math.max(1, 0.01 * s.distanceM)) return false;
+    if (s.startTime !== null && t.startTime !== null) return t.startTime === s.startTime;
+    if (s.startTime !== null || t.startTime !== null) return false;
+    return samePlace(t.startPoint, s.startPoint);
+  });
 }
 
 export async function saveDraft(

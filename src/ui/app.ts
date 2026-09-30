@@ -99,7 +99,7 @@ export function startApp(root: HTMLElement, db: GpxDb): void {
         : { icon: 'gps', label: 'Aufnahme starten', text: 'Route per GPS aufzeichnen, auch bei gesperrtem Display (Android-App).', onSelect: () => void show('record') },
       { icon: 'upload', label: 'GPX importieren', text: 'Eine Route aus einer GPX-Datei übernehmen.', onSelect: () => void show('import') },
       { icon: 'edit', label: 'Manuell anlegen', text: 'Tour ohne Track, z. B. einen Stellplatz oder eine Unterkunft.', onSelect: () => void toursView.newTour() },
-    ]);
+    ], chrome);
   }
 
   // ---- Navigation ----
