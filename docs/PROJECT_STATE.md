@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Version 0.8.0 (Stand Phase 8). Die laufende Version steht in der App unter Einstellungen → „Über die App“ (Version, Build-Commit, Build-Zeit; gesetzt in vite.config.ts, angezeigt über src/buildInfo.ts). Bei jeder neuen Phase Version in package.json und android/app/build.gradle anheben und PHASE_LABEL in src/buildInfo.ts anpassen.
+Version 0.8.1 (Stand Phase 8, Fehlerbehebungen nach Gerätetest). Die laufende Version steht in der App unter Einstellungen → „Über die App“ (Version, Build-Commit, Build-Zeit; gesetzt in vite.config.ts, angezeigt über src/buildInfo.ts). Bei jedem neuen Build für den Nutzer die Version erhöhen (Patch: 0.8.1, 0.8.2 …; neue Phase: 0.9.0): Version in package.json und android/app/build.gradle anheben und PHASE_LABEL in src/buildInfo.ts anpassen.
 
 Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder, auf dem Gerät positiv getestet) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
@@ -205,3 +205,4 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 ### Nachtrag Fall 37 (Android-Zurück im Sheet „Neue Tour“)
 - Gerätetest: Zurück nach „Neue Tour“ schloss die ganze App. Ursache nicht sicher geklärt; wahrscheinlich fängt der History-Eintrag (`pushState`) im Android-WebView die Zurück-Taste nicht ab. Änderung: In der Android-App (Capacitor) gibt es keine History-Einträge mehr; `MainActivity.kt` fragt bei Zurück per `evaluateJavascript` die Funktion `window.__travelbookBack` (`src/ui/chrome.ts`, `runBack`) ab. Liefert sie true, hat die Oberfläche zurückgeschaltet (Sheet zu, Unterseite verlassen); sonst gilt die Standardaktion (App verlassen). Im Browser/PWA bleibt der History-Weg unverändert.
 - Betroffen sind alle Zurück-Aktionen (Unterseiten, Tour-Details, Foto-Vollbild), nicht nur das Sheet. Nicht am Gerät gesehen, Kotlin nur von CI gebaut: Fälle 34, 37 und Aufnahme/Import → Zurück erneut testen.
+- Fall 34 (Foto-Vollbild + Android-Zurück, 0.8.1): Das Vollbild hörte nur auf `popstate`, das es in der Android-App nicht mehr gibt. Neu: `Chrome.overlay` – Überlagerungen melden sich an und schließen bei Zurück vor der Seite. Genutzt vom Foto-Vollbild (`photosSection.ts`, `toursView.ts`).

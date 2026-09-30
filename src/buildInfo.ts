@@ -12,7 +12,7 @@ export const APP_VERSION = typeof __APP_VERSION__ === 'string' ? __APP_VERSION__
 export const BUILD_COMMIT = typeof __BUILD_COMMIT__ === 'string' ? __BUILD_COMMIT__ : 'unbekannt';
 export const BUILD_TIME = typeof __BUILD_TIME__ === 'string' ? __BUILD_TIME__ : '';
 
-/** Z. B. „Version 0.8.0 · Build a1b2c3d · 30.09.2026, 07:10“. */
+/** Z. B. „Version 0.8.1 · Build a1b2c3d · 30.09.2026, 07:10“. */
 export function buildInfoText(version = APP_VERSION, commit = BUILD_COMMIT, time = BUILD_TIME): string {
   const d = time ? new Date(time) : null;
   const when = d && Number.isFinite(d.getTime()) ? d.toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }) : '';

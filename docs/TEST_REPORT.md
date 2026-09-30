@@ -50,7 +50,7 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 31 | Android: „Backup erstellen“, Teilen-Menü einmal ohne Auswahl schließen, einmal „Dateien“/Drive wählen | Ohne Auswahl: Hinweis „ohne Auswahl geschlossen“, „Letztes Backup“ unverändert. Mit Ziel: Erfolgsmeldung, „Letztes Backup“ aktualisiert | |
 | 32 | Offline-Karte, Kategorie mit nur einem Stellplatz (Tour ohne Track) antippen | Karte zoomt auf den Punkt und bleibt bedienbar (kein leeres/graues Bild, Zoom-Knöpfe funktionieren) | |
 | 33 | Online-Karte öffnen, zu „Daten“ wechseln, zurück zur Karte | Kartenhintergrund bleibt stehen (kein erneutes Laden/Flackern) | |
-| 34 | Tour-Details → Foto antippen (Vollbild) → Android-Zurück-Taste | Vollbild und Details schließen sich, Liste ist sichtbar (kein Foto bleibt stehen) | |
+| 34 | Tour-Details → Foto antippen (Vollbild) → Android-Zurück-Taste | Android-App: erstes Zurück schließt nur das Vollbild, zweites Zurück die Details (Browser: beides zugleich). Kein Foto bleibt über der Liste stehen | |
 | 35 | Viele Touren: Karte öffnen, zu „Daten“, zurück zur Karte; Kategorie-Chip ganz rechts antippen | Zweites Öffnen sofort; gewählter Chip bleibt sichtbar | |
 | 36 | GPX-Datei importieren, speichern, dieselbe Datei erneut wählen | Warnung „vermutlich schon vorhanden“ mit Name und Datum, Knopf „Trotzdem speichern“; eine andere Datei zeigt keine Warnung | |
 | 37 | (nach Umbau auf direkte Zurück-Abfrage, Version 0.8.0 ab Commit siehe Einstellungen) Daten → „Neue Tour“ → Android-Zurück | Nur das Sheet schließt sich, die App bleibt offen; danach zweimal Zurück verlässt die App wie gewohnt. Ebenso: Sheet öffnen → „GPX importieren“ → Zurück → Datenliste | |

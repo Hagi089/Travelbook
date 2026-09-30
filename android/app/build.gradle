@@ -8,8 +8,8 @@ android {
         applicationId "de.hagi089.travelbook"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 8
-        versionName "0.8.0"
+        versionCode 9
+        versionName "0.8.1"
         aaptOptions {
             // Capacitor-Vorgabe: Dateien, die nicht ins Asset-Paket gehören.
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~'

@@ -1,12 +1,13 @@
 import { addPhoto, deletePhoto, listPhotos, MAX_PHOTOS_PER_TOUR, type GpxDb, type Photo } from '../db-api';
 import { preparePhoto, type PreparedPhoto } from '../photos/resize';
+import type { Chrome } from './chrome';
 import { h } from './dom';
 
 /**
  * Fotobereich einer Tour: bis zu 3 Fotos, hinzufügen (Kamera/Galerie über die Systemauswahl) und entfernen.
  * Fotos werden vor dem Speichern verkleinert und komprimiert (siehe preparePhoto).
  */
-export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
+export function createPhotosSection(db: GpxDb, tourId: string, chrome?: Chrome): HTMLElement {
   const root = h('div', { class: 'photos' });
   const msg = h('div', { class: 'status error', role: 'status' });
   const grid = h('div', { class: 'photo-grid' });
@@ -22,7 +23,9 @@ export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
   function openViewer(url: string): void {
     const close = h('button', { type: 'button', class: 'photo-viewer-close', 'aria-label': 'Schließen' }, '×');
     const viewer = h('div', { class: 'photo-viewer', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Foto' }, h('img', { src: url, alt: 'Foto der Tour' }), close);
+    let release: (() => void) | undefined;
     const shut = (): void => {
+      release?.();
       document.removeEventListener('keydown', onKey);
       window.removeEventListener('popstate', shut);
       viewer.remove();
@@ -34,6 +37,8 @@ export function createPhotosSection(db: GpxDb, tourId: string): HTMLElement {
     document.addEventListener('keydown', onKey);
     // Android-Zurück-Taste verlässt die Detailansicht; das Vollbild darf dann nicht über der nächsten Seite stehen bleiben.
     window.addEventListener('popstate', shut);
+    // Zurück (Pfeil, Android-Taste) schließt zuerst das Vollbild.
+    release = chrome?.overlay(shut);
     document.body.append(viewer);
     close.focus();
   }

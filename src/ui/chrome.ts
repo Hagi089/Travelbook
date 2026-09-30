@@ -15,6 +15,12 @@ export interface Chrome {
   goBack(): void;
   /** Entfernt die Zurück-Aktion nur, wenn sie noch `fn` ist (ohne History-Änderung). */
   clearBackIf(fn: () => void): void;
+  /**
+   * Meldet eine Überlagerung an (z. B. Foto-Vollbild), die vor der Zurück-Aktion der Seite schließt. Gibt die Funktion
+   * zurück, die sie wieder abmeldet (beim Schließen aufrufen). Im Browser läuft Zurück weiter über die History
+   * (Seite verlassen, Überlagerung schließt mit); die App-Leiste und die Android-App schließen zuerst die Überlagerung.
+   */
+  overlay(close: () => void): () => void;
 }
 
 export interface ChromeView {
@@ -48,8 +54,15 @@ export function createChrome(onFabClick: () => void): ChromeView {
   let depth = 0;
   const native = Capacitor.isNativePlatform();
 
-  /** Führt die aktuelle Zurück-Aktion aus; false, wenn es keine gibt. */
+  const overlays: Array<() => void> = [];
+
+  /** Führt die oberste Überlagerung bzw. die aktuelle Zurück-Aktion aus; false, wenn es nichts zu tun gibt. */
   function runBack(): boolean {
+    const top = overlays.pop();
+    if (top) {
+      top();
+      return true;
+    }
     const f = backFn;
     if (!f) return false;
     backFn = null;
@@ -84,8 +97,16 @@ export function createChrome(onFabClick: () => void): ChromeView {
     fab(visible) {
       fabButton.hidden = !visible;
     },
+    overlay(close) {
+      overlays.push(close);
+      return () => {
+        const i = overlays.lastIndexOf(close);
+        if (i >= 0) overlays.splice(i, 1);
+      };
+    },
     goBack() {
-      if (depth > 0) history.back();
+      if (overlays.length > 0) runBack();
+      else if (depth > 0) history.back();
       else runBack();
     },
     clearBackIf(fn) {
