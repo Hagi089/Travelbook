@@ -14,6 +14,8 @@ Push auf `main` startet `.github/workflows/deploy.yml` (Test → Build → GitHu
 Einmalig im Repo: Settings → Pages → Source: „GitHub Actions“.
 
 ## Android-App (Debug-APK)
+Signierter Release-Build (APK/AAB): Anleitung in `docs/RELEASE_SIGNING.md`. Abhängigkeiten sind über `package-lock.json` fixiert (`npm ci` in der CI; aktualisieren über den Workflow „Lockfile erzeugen“).
+
 Der Workflow `.github/workflows/android.yml` baut bei Änderungen an `android/`, `src/tracking/` usw. eine Debug-APK (GitHub → Actions → „Android Debug APK“ → Artifact `travelbook-debug-apk`). Die APK ist mit dem eingecheckten Debug-Schlüssel `android/app/debug.keystore` signiert, damit neuere Builds die installierte App aktualisieren, ohne Daten zu löschen. Für eine Veröffentlichung ist ein eigener Release-Schlüssel nötig (noch nicht eingerichtet).
 
 Lokal (Android Studio Otter 2025.2.1+, JDK 21): `npm install && npm run android:sync`, dann `android/` öffnen.

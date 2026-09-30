@@ -4,6 +4,7 @@
 Nutzerrückmeldung 30.09.2026: Phase 8 (Fälle 20–35) „erfolgreich“; einzelne Fälle nicht getrennt bestätigt. Die Ergebnisspalten bleiben leer, bis sie eingetragen werden.
 
 ## Automatische Tests (CI)
+Stand 30.09.2026 (0.8.3): CI grün mit `npm ci` (Lockfile), Vitest, Typprüfung, Build, Pages-Deploy und Debug-APK; der Release-Workflow lief im Testmodus (Wegwerf-Schlüssel) inkl. `apksigner verify` grün. Der neue Bestätigungsdialog hat keinen Vitest-Test (Testumgebung `node`, kein DOM); er wurde stattdessen in Chromium durchgespielt (Abbrechen, Bestätigen, Escape, Fläche, Zurück-Hook, Hell/Dunkel).
 Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprüfung) liefen in der CI grün; Phase 7a (`tests/tour-search.test.ts`) ist lokal mit einem Ersatz-Testrunner (15/15) und in der CI (grün) geprüft; der Workflow „Android Debug APK“ baut die APK. Die Oberfläche und der native Teil (Kotlin) sind nicht automatisch getestet.
 
 ## Gerätetests GPS-Aufnahme (Pflicht laut ADR-001, noch NICHT durchgeführt)
@@ -56,6 +57,10 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 37 | (nach Umbau auf direkte Zurück-Abfrage, Version 0.8.0 ab Commit siehe Einstellungen) Daten → „Neue Tour“ → Android-Zurück | Nur das Sheet schließt sich, die App bleibt offen; danach zweimal Zurück verlässt die App wie gewohnt. Ebenso: Sheet öffnen → „GPX importieren“ → Zurück → Datenliste | |
 | 38 | Browser: Aufnahme starten, Standortfreigabe ablehnen | Gelbe Warnung „Standortfreigabe verweigert“ in der Aufnahme (nach höchstens ca. 10 s) | |
 | 39 | Design „System“ am Gerät, Backup erstellen; auf Gerät mit Design „Dunkel“ wiederherstellen (mit Einstellungen) | Danach folgt die App wieder dem System | |
+| 40 | Löschen mit Dialog (0.8.3): Tour öffnen → „Löschen“; Kategorie ohne Touren löschen; Foto „×“ | M3-Dialog (Titel, Text, „Abbrechen“ / rotes „Löschen“ bzw. „Entfernen“), kein Browser-Dialog; Abbrechen ändert nichts, Bestätigen löscht | |
+| 41 | Bei offenem Dialog Android-Zurück-Taste bzw. neben den Dialog tippen | Dialog schließt als „Abbrechen“, Daten bleiben, App bleibt offen; danach funktioniert Zurück wie gewohnt | |
+| 42 | Einstellungen → Sicherung → Wiederherstellen → „Ersetzen“ | Dialog „Alle Daten ersetzen?“; Abbrechen: nichts passiert; „Ersetzen“ stellt wieder her | |
+| 43 | Hell/Dunkel: einen Dialog öffnen | Dialogfläche, Text und rote Schaltfläche in beiden Designs gut lesbar | |
 
 ### Geräte
 | Gerät / Hersteller | Android-Version | Fälle bestanden | Auffälligkeiten |

@@ -1,6 +1,6 @@
 # PROJECT_STATE
 
-Version 0.8.2 (Stand Phase 8, Fehlerbehebungen nach Gerätetest). Die laufende Version steht in der App unter Einstellungen → „Über die App“ (Version, Build-Commit, Build-Zeit; gesetzt in vite.config.ts, angezeigt über src/buildInfo.ts). Bei jedem neuen Build für den Nutzer die Version erhöhen (Patch: 0.8.1, 0.8.2 …; neue Phase: 0.9.0): Version in package.json und android/app/build.gradle anheben und PHASE_LABEL in src/buildInfo.ts anpassen.
+Version 0.8.3 (Stand Phase 8; Aufräumpunkte: M3-Dialoge, package-lock.json, Release-Signatur-Pipeline). Die laufende Version steht in der App unter Einstellungen → „Über die App“ (Version, Build-Commit, Build-Zeit; gesetzt in vite.config.ts, angezeigt über src/buildInfo.ts). Bei jedem neuen Build für den Nutzer die Version erhöhen (Patch: 0.8.1, 0.8.2, 0.8.3 …; neue Phase: 0.9.0): Version in package.json und android/app/build.gradle anheben und PHASE_LABEL in src/buildInfo.ts anpassen.
 
 Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder, auf dem Gerät positiv getestet) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
@@ -141,7 +141,6 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 - Design „System“ wird im Backup nicht gespeichert (Schlüssel fehlt dann); beim Wiederherstellen bleibt die Darstellung des Geräts. Klein, nicht geändert.
 - Nur „ungefährer Standort“ erlaubt: Aufnahme startet nicht, Meldung spricht allgemein von fehlender Standortberechtigung.
 - Exportierte GPX-Dateien bleiben im App-Cache liegen (Android räumt den Cache bei Bedarf selbst).
-- Kein `package-lock.json`: CI installiert je Lauf die neuesten passenden Versionen.
 - Lokal geprüft: 26 Tests (Backup-Format, Karten-Hilfen, ZIP, Service Worker) mit Ersatzrunner grün, Typprüfung von `src` gegen Platzhalter-Typen ohne Befund. Volle Prüfung nur in der CI.
 
 ## Gerätetest-Rückmeldung und Entscheidungen (30.09.2026)
@@ -157,7 +156,13 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 - Tests: `tests/import-duplicates.test.ts` (neu), `tests/tracking.test.ts` (Standortfreigabe), `tests/backup-format.test.ts` (Einstellungen). Lokal geprüft: Einstellungen-Tests (Ersatzrunner) und Typprüfung von `src` gegen Attrappen; die übrigen Tests laufen in der CI.
 
 ## Aktuell in Arbeit
-- Nichts offen im Code. Wartet auf CI-Ergebnis der Restpunkte und Gerätetests dazu (TEST_REPORT.md Fälle 36–39). Nächste mögliche Themen: Höhenrauschen-/Sprung-Schwellen an echten Tracks prüfen, Release-Signatur, M3-Dialoge statt `confirm`, `package-lock.json`.
+- Nichts offen im Code. Wartet auf Gerätetests (TEST_REPORT.md Fälle 36–39 und neu 40–42). Die vier optionalen Punkte sind bearbeitet (Abschnitt „Aufräumpunkte 0.8.3“): Schwellen geprüft (keine Änderung, siehe dort), `package-lock.json` und `confirm`-Ersatz erledigt, Release-Signatur-Pipeline vorbereitet (Schlüssel fehlt bewusst).
+
+## Aufräumpunkte 0.8.3 (30.09.2026)
+1. **Schwellen an echten Tracks** (`src/gpx/stats.ts`, unverändert): Ausgewertet wurden 7 Dateien des Nutzers (Komoot, 13–83 km, 429–2799 Punkte). Befund: Es sind **geplante/berechnete Komoot-Routen mit gleichmäßig verteilten Zeitstempeln**, keine rohen Handy-GPS-Aufzeichnungen. Höhen sind geglättet (mittlere Schrittänderung 0,1–1 m, kein Zickzack), es gibt keinen einzigen GPS-Sprung (max. 10,1 m/s, Median-Abstand 18–33 m). Folgerungen: (a) Die **70-m/s-Grenze ist an diesen Daten nicht prüfbar** (nie ausgelöst); sie ist sehr großzügig (252 km/h) und fängt nur grobe Sprünge. (b) **Höhen-Schwelle:** Aufstieg bei 0 / 3 / 5 m Schwelle: flache Tour Bayreuth 650 / 553 / 501 m, Pirna–Děčín 849 / 777 / 753 m, Alpentour 2525 / 2457 / 2425 m. Bei Bergtouren ist die Wahl fast egal (≈ 3 %), bei flachen Touren schwankt das Ergebnis um 15–20 % – aber ohne echtes Rauschen im Datenmaterial lässt sich nicht sagen, welcher Wert „richtig“ ist. **Entscheidung: keine Änderung.** Nötig: Aufnahmen der App selbst (Profil „Normal“) bzw. rohe Handy-Tracks, ideal mit bekannter Referenz (z. B. flache Strecke, bekannter Höhenunterschied).
+2. **`confirm` → M3-Dialog** (`src/ui/confirmDialog.ts`, neu; CSS `.dialog` in `styles.css`): `confirmDialog({title, text, confirmLabel, destructive})` liefert `Promise<boolean>`. Ersetzt alle vier `confirm`-Aufrufe: Tour löschen (`toursView.ts`), Kategorie löschen (`categoriesPanel.ts`), Foto entfernen (`photosSection.ts`), Backup „Ersetzen“ (`backupPanel.ts`). Verhalten: Fokus auf „Abbrechen“, Escape/Fläche/Android-Zurück = Abbrechen, Tab bleibt im Dialog. Android-Zurück: Der Dialog setzt während er offen ist `window.__travelbookBack` (den Hook, den `MainActivity` abfragt) auf „Dialog schließen“ und stellt den vorigen Hook danach wieder her. In Chromium (390 px, hell/dunkel) geprüft: Abbrechen, Bestätigen, Escape, Fläche, Zurück-Hook, Wiederherstellen des Hooks; Optik gesehen. Auf dem Gerät ungetestet (Fälle 40–41).
+3. **`package-lock.json`**: In der Entwicklungsumgebung gesperrt (npm 403), daher über den neuen Workflow `lockfile.yml` (von Hand startbar, committet die Datei auf main) erzeugt: 255 Pakete, u. a. `@capacitor/*` 8.5.2, `vite` 6.4.3, `vitest` 2.1.9, `typescript` 5.9.3, `dexie` 4.4.6. `deploy.yml` und `android.yml` nutzen jetzt `npm ci` (Lockfile-Änderung löst auch den APK-Build aus). Aktualisieren von Abhängigkeiten künftig: `package.json` ändern und `lockfile.yml` starten (oder lokal `npm install`). CI danach grün.
+4. **Signierter Release-Build**: `android/app/build.gradle` (Release-Signatur aus `android/keystore.properties` oder Umgebungsvariablen, ohne Angaben unsignierte APK, Debug-Build unverändert), `.github/workflows/android-release.yml` (von Hand; baut `app-release.apk` und `.aab`, prüft mit `apksigner verify`), `.gitignore` (Schlüsseldateien), `docs/RELEASE_SIGNING.md` (Schlüssel erzeugen, Secrets, Umstieg, Play Store). Pipeline mit Wegwerf-Schlüssel („test_signing“) erfolgreich durchgelaufen, auch `apksigner verify`; das Test-Artifact `travelbook-release-TESTKEY` darf nicht installiert werden. **Ein echter Schlüssel existiert nicht; den erzeugt und verwahrt der Nutzer.** Umstieg Debug → Release erfordert Deinstallation (Datenverlust) – vorher Backup. Nicht geprüft: Verhalten von `lintVital` mit echtem Schlüssel (lief im Testlauf durch), Play-Store-Anforderungen.
 
 ## CI / GitHub Actions (29.09.2026)
 - Aktionen auf Node-24-Versionen angehoben: `actions/checkout@v5`, `actions/setup-node@v5`, `actions/setup-java@v5`, `gradle/actions/setup-gradle@v5` (Gradle 8.14.3), `actions/upload-artifact@v7`, `actions/upload-pages-artifact@v5`, `actions/deploy-pages@v4`. Beide Workflows laufen ohne Annotationen (Warnungen).
@@ -175,7 +180,7 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 5. Phase 6: erledigt (Fotos, Notizen, Detailansicht).
 6. Phase 7a: Suche, Filter (bestätigt). Phase 7b: Land (bestätigt). Phase 8: Backup (8a), PWA-Offline (8b), Offline-Weltkarte Stufe 1 (8c) umgesetzt, Gerätetests offen; Stufe 2 (Regionalkarten) offen.
 7. Phase 9: unabhängiger Testdurchlauf.
-8. Nebenbei: `confirm`-Dialoge durch M3-Dialoge ersetzen, Release-Signaturschlüssel statt Debug-Keystore vor Veröffentlichung, `ubuntu-latest`-Umstellung.
+8. Nebenbei: Release-Schlüssel erzeugen (Nutzer), `ubuntu-latest`-Umstellung (Runner ist auf `ubuntu-24.04` festgesetzt).
 
 ## Bekannte Probleme
 - Keine bekannten Fehler; offene Unsicherheiten siehe oben (Gerätetests fehlen).
@@ -188,12 +193,12 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 
 ## Temporäre Lösungen (später zurückbauen)
 - Online-Karte: Stellen mit `TEMP-ONLINE-MAP` (Online-Hinweis, OSM-Richtlinien-Notiz); Stand des Rückbaus in ARCHITECTURE.md (ADR-002, „Stand Phase 8c“).
-- Dialoge: `window.confirm` beim Löschen (später durch M3-Dialog ersetzen).
 - Export unter Android: Teilen-Menü statt „Speichern unter“ (Cache-Datei); ggf. später direkter Speicherort-Dialog.
-- Feste Debug-Signatur im Repository (`android/app/debug.keystore`); vor einer Veröffentlichung durch einen Release-Schlüssel ersetzen.
+- Feste Debug-Signatur im Repository (`android/app/debug.keystore`); die Release-Pipeline ist vorbereitet (docs/RELEASE_SIGNING.md), der Release-Schlüssel muss vom Nutzer erzeugt werden.
 
 ## Offene Entscheidungen
-- Schwellen für Höhenrauschen (3 m) und GPS-Sprung (70 m/s) an echten Tracks prüfen.
+- Schwellen für Höhenrauschen (3 m) und GPS-Sprung (70 m/s): mit 7 Komoot-Routen geprüft, aber nicht belegbar (siehe „Aufräumpunkte 0.8.3“). Bleiben Annahmen, bis echte In-App-Aufnahmen vorliegen.
+- Release-Schlüssel erzeugen und als Secrets hinterlegen (Nutzer, docs/RELEASE_SIGNING.md).
 - Kartenquelle und Offline-Strategie (ARCHITECTURE.md).
 - Bestätigt am 29.09.2026 (Capacitor-8-Update-Anleitung): Node 22, minSdk 24, compileSdk/targetSdk 36, Android Gradle Plugin 8.13.0, Gradle 8.14.3, Kotlin 2.2.20, Android Studio Otter 2025.2.1+. Genaue Patchversionen von `@capacitor/*` liegen nicht vor (npm hier blockiert); `^8.0.0` ist ein Platzhalter, die CI zeigt, was installiert wird.
 - Entschieden am 29.09.2026: applicationId `de.hagi089.travelbook`; Android-Ordner wird ins Repository eingecheckt (keine Erzeugung in der CI).

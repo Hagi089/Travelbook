@@ -71,3 +71,10 @@ Ablauf: Nutzer startet → `startRecording` legt die Tour an (Quelle `recording`
 
 ## Nicht umgesetzt
 - Oberfläche für Import/Export, Dateiauswahl, Teilen unter Android, Kompression großer Tracks, Import anderer Formate (TCX, KML, FIT).
+
+## Bestätigungsdialog (0.8.3)
+`src/ui/confirmDialog.ts`: `confirmDialog({ title, text?, confirmLabel, cancelLabel?, destructive? }): Promise<boolean>` – Material-3-Dialog statt `window.confirm`. Schließen per Abbrechen, Escape, Fläche oder Android-Zurück gibt `false`. Für Zurück wird `window.__travelbookBack` (von `chrome.ts` in der Android-App gesetzt, von `MainActivity` abgefragt) für die Dauer des Dialogs überschrieben und danach wiederhergestellt; es gibt keinen History-Eintrag. Verwendet in `toursView.ts`, `categoriesPanel.ts`, `photosSection.ts`, `backupPanel.ts`.
+
+## Build, Lockfile, Release (0.8.3)
+- `package-lock.json` ist eingecheckt; `deploy.yml` und `android.yml` nutzen `npm ci`. Neu erzeugen: Workflow `lockfile.yml` (von Hand).
+- Release: `android-release.yml` (von Hand) + `docs/RELEASE_SIGNING.md`. Signatur-Werte kommen aus `android/keystore.properties` oder `TRAVELBOOK_KEYSTORE_*`-Umgebungsvariablen; fehlen sie, entsteht eine unsignierte Release-APK.
