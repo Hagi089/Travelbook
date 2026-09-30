@@ -36,6 +36,9 @@ export function registerServiceWorker(onUpdate: (activate: () => void) => void):
             if (worker.state === 'installed' && navigator.serviceWorker.controller) announce(worker);
           });
         });
+        // register() prüft bei bereits vorhandenem Service Worker nicht selbst auf eine neue sw.js; die Prüfung beim
+        // Seitenaufruf macht der Browser nur unter bestimmten Bedingungen. Deshalb hier ausdrücklich prüfen.
+        void registration.update().catch(() => undefined);
         document.addEventListener('visibilitychange', () => {
           if (document.visibilityState === 'visible') void registration.update().catch(() => undefined);
         });
