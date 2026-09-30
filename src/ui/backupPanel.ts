@@ -1,5 +1,6 @@
 import { applyBackup, applySettings, collectSettings, createBackup, getLastBackup, hasOpenRecording, OPEN_RECORDING_MESSAGE, readBackup, setLastBackup, type BackupData, type RestoreMode, type RestoreResult } from '../backup';
 import type { GpxDb } from '../db-api';
+import { confirmDialog } from './confirmDialog';
 import { h } from './dom';
 import { downloadBlob } from './download';
 
@@ -152,7 +153,7 @@ export function createBackupPanel(db: GpxDb): { el: HTMLElement; refresh(): Prom
     go.addEventListener('click', async () => {
       if (busy || !pending) return;
       const m = mode();
-      if (m === 'replace' && !confirm('Alle Touren, Kategorien und Fotos auf diesem Gerät werden durch den Inhalt des Backups ersetzt. Touren, die nur hier existieren, gehen verloren (außer sie sind in einem eigenen Backup gesichert). Fortfahren?')) return;
+      if (m === 'replace' && !(await confirmDialog({ title: 'Alle Daten ersetzen?', text: 'Alle Touren, Kategorien und Fotos auf diesem Gerät werden durch den Inhalt des Backups ersetzt. Touren, die nur hier existieren, gehen verloren (außer sie sind in einem eigenen Backup gesichert).', confirmLabel: 'Ersetzen', destructive: true }))) return;
       setBusy(true);
       go.disabled = true;
       cancel.disabled = true;

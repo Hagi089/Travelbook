@@ -1,6 +1,16 @@
 apply plugin: 'com.android.application'
 apply plugin: 'org.jetbrains.kotlin.android'
 
+// Release-Signatur: Werte aus android/keystore.properties (lokal, nicht eingecheckt) oder aus Umgebungsvariablen (CI).
+// Ohne Angaben entsteht eine UNSIGNIERTE Release-APK; der Debug-Build ist davon nicht betroffen.
+def releaseKeystoreProps = new Properties()
+def releaseKeystoreFile = rootProject.file('keystore.properties')
+if (releaseKeystoreFile.exists()) {
+    releaseKeystoreFile.withInputStream { releaseKeystoreProps.load(it) }
+}
+def releaseProp = { String key, String envName -> releaseKeystoreProps.getProperty(key) ?: System.getenv(envName) }
+def releaseStoreFile = releaseProp('storeFile', 'TRAVELBOOK_KEYSTORE_FILE')
+
 android {
     namespace = "de.hagi089.travelbook"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -8,8 +18,8 @@ android {
         applicationId "de.hagi089.travelbook"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "0.8.2"
+        versionCode 11
+        versionName "0.8.3"
         aaptOptions {
             // Capacitor-Vorgabe: Dateien, die nicht ins Asset-Paket gehören.
             ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:.*:!CVS:!thumbs.db:!picasa.ini:!*.scc:*~'
@@ -24,6 +34,14 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (releaseStoreFile) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseProp('storePassword', 'TRAVELBOOK_KEYSTORE_PASSWORD')
+                keyAlias releaseProp('keyAlias', 'TRAVELBOOK_KEY_ALIAS')
+                keyPassword releaseProp('keyPassword', 'TRAVELBOOK_KEY_PASSWORD')
+            }
+        }
     }
     buildTypes {
         debug {
@@ -32,6 +50,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            if (releaseStoreFile) {
+                signingConfig signingConfigs.release
+            }
         }
     }
 }

@@ -22,6 +22,7 @@ import {
 } from '../db-api';
 import { countryName, loadCountryIndex, sortedCountryCodes } from '../geo';
 import type { Chrome } from './chrome';
+import { confirmDialog } from './confirmDialog';
 import { h, type View } from './dom';
 import { downloadText } from './download';
 import { createPhotosSection } from './photosSection';
@@ -207,7 +208,7 @@ export function createToursView(db: GpxDb, chrome: Chrome): ToursView {
     }
     const del = h('button', { type: 'button', class: 'danger ghost' }, 'Löschen');
     del.addEventListener('click', async () => {
-      if (!window.confirm(`Tour "${tour.name}" wirklich löschen?`)) return;
+      if (!(await confirmDialog({ title: 'Tour löschen?', text: `Die Tour "${tour.name}" wird mit Track, Fotos und Notizen gelöscht. Das lässt sich nicht rückgängig machen.`, confirmLabel: 'Löschen', destructive: true }))) return;
       try {
         await deleteTour(db, tour.id);
         await refresh();

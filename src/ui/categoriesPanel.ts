@@ -1,4 +1,5 @@
 import { createCategory, deleteCategory, listCategories, updateCategory, type Category, type GpxDb } from '../db-api';
+import { confirmDialog } from './confirmDialog';
 import { h } from './dom';
 
 const DEFAULT_NEW_COLOR = '#607d8b';
@@ -49,7 +50,7 @@ export function createCategoriesPanel(db: GpxDb): { el: HTMLElement; refresh(): 
         const used = await db.tours.where('categoryId').equals(cat.id).count();
         const others = all.filter((c) => c.id !== cat.id);
         if (used === 0) {
-          if (!window.confirm(`Kategorie "${cat.name}" wirklich löschen?`)) return;
+          if (!(await confirmDialog({ title: 'Kategorie löschen?', text: `Die Kategorie "${cat.name}" wird gelöscht. Es sind keine Touren zugeordnet.`, confirmLabel: 'Löschen', destructive: true }))) return;
           await deleteCategory(db, cat.id);
           await refresh();
           return;

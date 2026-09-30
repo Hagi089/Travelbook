@@ -1,0 +1,69 @@
+name: Android Release (signiert)
+# Nur von Hand starten. Braucht vier Repository-Secrets (Settings -> Secrets and variables -> Actions),
+# Anleitung: docs/RELEASE_SIGNING.md
+on:
+  workflow_dispatch:
+    inputs:
+      test_signing:
+        description: 'Nur Pipeline-Test: mit Wegwerf-Schlüssel bauen (Ergebnis NICHT verwenden)'
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+      - name: Schlüssel bereitstellen
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          TEST_SIGNING: ${{ inputs.test_signing }}
+        run: |
+          KS="$RUNNER_TEMP/release.jks"
+          if [ "$TEST_SIGNING" = "true" ]; then
+            echo "::warning::Testlauf mit Wegwerf-Schlüssel – die APK nicht installieren oder weitergeben."
+            KEYSTORE_PASSWORD=testpass123; KEY_ALIAS=testkey; KEY_PASSWORD=testpass123
+            keytool -genkeypair -keystore "$KS" -storepass "$KEYSTORE_PASSWORD" -keypass "$KEY_PASSWORD" \
+              -alias "$KEY_ALIAS" -keyalg RSA -keysize 2048 -validity 2 -dname "CN=test"
+          else
+            if [ -z "$KEYSTORE_BASE64" ] || [ -z "$KEYSTORE_PASSWORD" ] || [ -z "$KEY_ALIAS" ] || [ -z "$KEY_PASSWORD" ]; then
+              echo "::error::Secrets fehlen (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). Siehe docs/RELEASE_SIGNING.md."
+              exit 1
+            fi
+            echo "$KEYSTORE_BASE64" | base64 -d > "$KS"
+          fi
+          {
+            echo "TRAVELBOOK_KEYSTORE_FILE=$KS"
+            echo "TRAVELBOOK_KEYSTORE_PASSWORD=$KEYSTORE_PASSWORD"
+            echo "TRAVELBOOK_KEY_ALIAS=$KEY_ALIAS"
+            echo "TRAVELBOOK_KEY_PASSWORD=$KEY_PASSWORD"
+          } >> "$GITHUB_ENV"
+      - run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
+      - run: npm run build
+      - run: npx cap sync android
+      - uses: gradle/actions/setup-gradle@v5
+        with:
+          gradle-version: 8.14.3
+      - run: gradle -p android assembleRelease bundleRelease --stacktrace
+      - name: Signatur prüfen
+        run: |
+          APKSIGNER=$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -1)
+          "$APKSIGNER" verify --print-certs android/app/build/outputs/apk/release/app-release.apk
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.test_signing && 'travelbook-release-TESTKEY' || 'travelbook-release' }}
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            android/app/build/outputs/bundle/release/app-release.aab
+          if-no-files-found: error

@@ -15,3 +15,9 @@ android/app/src/main/assets/capacitor.config.json
 android/app/src/main/assets/capacitor.plugins.json
 android/app/build/
 android/.idea/
+
+# Release-Signatur (niemals einchecken)
+android/keystore.properties
+*.jks
+*.keystore
+!android/app/debug.keystore

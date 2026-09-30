@@ -1,0 +1,27 @@
+name: Lockfile erzeugen
+# Einmalig bzw. bei Bedarf von Hand starten (Actions -> Lockfile erzeugen -> Run workflow):
+# erzeugt package-lock.json aus package.json und committet sie auf main.
+on:
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  lockfile:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm install --package-lock-only --no-audit --no-fund
+      - name: Lockfile committen
+        run: |
+          if git diff --quiet -- package-lock.json && [ -f package-lock.json ]; then
+            echo "package-lock.json ist unverändert."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json
+          git commit -m "chore: package-lock.json erzeugt (reproduzierbare Builds)"
+          git push
