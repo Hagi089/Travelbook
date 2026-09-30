@@ -1,6 +1,8 @@
+import 'fake-indexeddb/auto';
 import { describe, expect, it } from 'vitest';
+import { GpxDb, listTours, seedDefaultCategories } from '../src/db';
 import type { Tour } from '../src/db/types';
-import { findDuplicateTour, prepareImport } from '../src/gpx';
+import { findDuplicateTour, prepareImport, saveDraft } from '../src/gpx';
 
 const NS = 'xmlns="http://www.topografix.com/GPX/1/1"';
 const TIMED = `<gpx ${NS}><trk><name>Runde</name><trkseg>
@@ -58,5 +60,19 @@ describe('Duplikaterkennung beim GPX-Import', () => {
 
   it('meldet nichts bei leerer Liste', () => {
     expect(findDuplicateTour([], draft(TIMED))).toBeUndefined();
+  });
+});
+
+describe('Duplikaterkennung über die Datenbank (wie im Import-Dialog)', () => {
+  it('findet die gespeicherte Tour, wenn dieselbe Datei erneut gelesen wird', async () => {
+    const db = new GpxDb('import-dup-db');
+    await db.open();
+    await seedDefaultCategories(db);
+    const first = prepareImport(TIMED, 'runde.gpx').drafts[0]!;
+    const saved = await saveDraft(db, first, { categoryId: 'default-wandern' });
+    const again = prepareImport(TIMED, 'runde.gpx').drafts[0]!;
+    expect(findDuplicateTour(await listTours(db), again)?.id).toBe(saved.id);
+    const other = prepareImport(UNTIMED, 'andere.gpx').drafts[0]!;
+    expect(findDuplicateTour(await listTours(db), other)).toBeUndefined();
   });
 });
