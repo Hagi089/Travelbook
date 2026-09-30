@@ -1,5 +1,7 @@
 # PROJECT_STATE
 
+Version 0.8.0 (Stand Phase 8). Die laufende Version steht in der App unter Einstellungen → „Über die App“ (Version, Build-Commit, Build-Zeit; gesetzt in vite.config.ts, angezeigt über src/buildInfo.ts). Bei jeder neuen Phase Version in package.json und android/app/build.gradle anheben und PHASE_LABEL in src/buildInfo.ts anpassen.
+
 Stand: 29.09.2026 – Phasen 1–6, Material-3-Oberfläche und Phase 7a (Suche/Filter, neues App-Icon, auf dem Gerät bestätigt) und Phase 7b (Länder, auf dem Gerät positiv getestet) umgesetzt. Auf dem Gerät bestätigt: Oberfläche, Profil „Normal“ (2 s / 3 m), Fotos in der Detailansicht. Ungetestet auf dem Gerät: GPX-Export nach FileProvider-Fix (Fehler behoben, Bestätigung fehlt), Fotos im Import-Dialog, Live-Distanz, Ausblenden laufender Aufnahmen, Langzeit-Aufnahme (TEST_REPORT.md).
 
 ## Repository

@@ -1,3 +1,4 @@
+import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
@@ -43,11 +44,30 @@ function serviceWorkerPlugin() {
   };
 }
 
+/** Kurzkennung des Builds: Commit aus der CI (GITHUB_SHA) oder lokal aus git; sonst „lokal“. */
+function buildCommit(): string {
+  const sha = process.env.GITHUB_SHA;
+  if (sha) return sha.slice(0, 7);
+  try {
+    return execSync('git rev-parse --short=7 HEAD', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim() || 'lokal';
+  } catch {
+    return 'lokal';
+  }
+}
+
+const pkg = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json'), 'utf8')) as { version: string };
+
 // GitHub Pages liefert unter /<repo-name>/ aus. Wird in der CI per BASE_PATH gesetzt.
 // Lokal und für Capacitor (WebView) ist "./" korrekt.
 export default defineConfig({
   base: process.env.BASE_PATH ?? './',
   build: { outDir: 'dist', sourcemap: true },
+  // Sichtbare Versionsangabe in den Einstellungen (src/buildInfo.ts).
+  define: {
+    __APP_VERSION__: JSON.stringify(pkg.version),
+    __BUILD_COMMIT__: JSON.stringify(buildCommit()),
+    __BUILD_TIME__: JSON.stringify(new Date().toISOString()),
+  },
   plugins: [serviceWorkerPlugin()],
   test: { environment: 'node' },
 });

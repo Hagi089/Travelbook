@@ -1,3 +1,4 @@
+import { buildInfoText, PHASE_LABEL } from '../buildInfo';
 import type { GpxDb } from '../db-api';
 import { getMapMode, setMapMode } from '../map/mapMode';
 import { ONLINE_OSM } from '../map/tileSource';
@@ -69,6 +70,7 @@ export function createSettingsView(db: GpxDb): View {
         section('Kategorien', 'Die Farbe einer Kategorie bestimmt die Darstellung der Touren auf der Karte. Änderungen werden automatisch gespeichert.', categories.el),
         section('Sicherung', 'Backup als ZIP-Datei mit allen Touren, Tracks, Notizen, Kategorien und Fotos. Damit lassen sich die Daten auf einem neuen Gerät oder nach einer Neuinstallation wiederherstellen. Das Backup ist nicht verschlüsselt und enthält deine Aufenthaltsorte – bitte sicher aufbewahren.', backup.el),
         section('Datenschutz', 'Alle Daten bleiben auf diesem Gerät. Es gibt kein Konto, keine Cloud und keine Analyse-Dienste.'),
+        section('Über die App', PHASE_LABEL, h('p', { class: 'muted small app-version' }, buildInfoText())),
       ),
     );
   }
