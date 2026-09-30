@@ -201,3 +201,7 @@ Geprüft, ohne Handlungsbedarf bzw. bewusst nicht geändert (Hinweise für spät
 ## Wichtige Architekturentscheidungen
 - ADR-001 (ARCHITECTURE.md): eigenes Kotlin-Plugin statt Community-Plugin; Transistorsoft als Fallback. Basiert auf Recherche, noch ohne Gerätetest.
 - Trackpunkte liegen getrennt von den Tour-Metadaten (DATA_MODEL.md).
+
+### Nachtrag Fall 37 (Android-Zurück im Sheet „Neue Tour“)
+- Gerätetest: Zurück nach „Neue Tour“ schloss die ganze App. Ursache nicht sicher geklärt; wahrscheinlich fängt der History-Eintrag (`pushState`) im Android-WebView die Zurück-Taste nicht ab. Änderung: In der Android-App (Capacitor) gibt es keine History-Einträge mehr; `MainActivity.kt` fragt bei Zurück per `evaluateJavascript` die Funktion `window.__travelbookBack` (`src/ui/chrome.ts`, `runBack`) ab. Liefert sie true, hat die Oberfläche zurückgeschaltet (Sheet zu, Unterseite verlassen); sonst gilt die Standardaktion (App verlassen). Im Browser/PWA bleibt der History-Weg unverändert.
+- Betroffen sind alle Zurück-Aktionen (Unterseiten, Tour-Details, Foto-Vollbild), nicht nur das Sheet. Nicht am Gerät gesehen, Kotlin nur von CI gebaut: Fälle 34, 37 und Aufnahme/Import → Zurück erneut testen.

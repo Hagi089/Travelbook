@@ -1,3 +1,4 @@
+import { Capacitor } from '@capacitor/core';
 import { h } from './dom';
 import { icon } from './icons';
 import { currentScheme, setThemePref, toggledPref } from './theme';
@@ -29,6 +30,11 @@ export interface ChromeView {
  * angelegt. Löst der Nutzer „Zurück“ aus (Pfeil oder Systemtaste), kommt ein popstate, und die Zurück-Aktion läuft.
  * Wird eine Unterseite auf anderem Weg verlassen (z. B. Navigationsleiste), bleibt der Eintrag stehen und wird
  * beim nächsten Zurück lautlos abgebaut – bewusst einfach gehalten statt History-Umbau mit Wettlaufgefahr.
+ *
+ * In der Android-App (Capacitor) gibt es keine History-Einträge: MainActivity.kt fragt bei jedem Zurück über
+ * `window.__travelbookBack` an, ob die Oberfläche selbst zurückgehen kann (true) oder die App-Standardaktion gelten soll
+ * (false, verlässt die App). Grund: Ein Test am Gerät zeigte, dass der History-Weg dort das Sheet „Neue Tour“ nicht
+ * abfing und die App schloss.
  */
 export function createChrome(onFabClick: () => void): ChromeView {
   const backBtn = h('button', { type: 'button', class: 'icon-button', 'aria-label': 'Zurück', hidden: '' }, icon('back'));
@@ -40,6 +46,18 @@ export function createChrome(onFabClick: () => void): ChromeView {
 
   let backFn: (() => void) | null = null;
   let depth = 0;
+  const native = Capacitor.isNativePlatform();
+
+  /** Führt die aktuelle Zurück-Aktion aus; false, wenn es keine gibt. */
+  function runBack(): boolean {
+    const f = backFn;
+    if (!f) return false;
+    backFn = null;
+    backBtn.hidden = true;
+    f();
+    return true;
+  }
+  if (native) (window as unknown as { __travelbookBack?: () => boolean }).__travelbookBack = runBack;
 
   function renderTheme(): void {
     const dark = currentScheme() === 'dark';
@@ -58,7 +76,7 @@ export function createChrome(onFabClick: () => void): ChromeView {
       const hadNone = backFn === null;
       backFn = fn;
       backBtn.hidden = fn === null;
-      if (fn && hadNone) {
+      if (fn && hadNone && !native) {
         history.pushState({ tb: 1 }, '');
         depth++;
       }
@@ -68,7 +86,7 @@ export function createChrome(onFabClick: () => void): ChromeView {
     },
     goBack() {
       if (depth > 0) history.back();
-      else backFn?.();
+      else runBack();
     },
     clearBackIf(fn) {
       if (backFn !== fn) return;

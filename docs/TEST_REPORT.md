@@ -53,7 +53,7 @@ Stand 29.09.2026 (bis Phase 6): `npm test` (Vitest) und `npm run build` (Typprü
 | 34 | Tour-Details → Foto antippen (Vollbild) → Android-Zurück-Taste | Vollbild und Details schließen sich, Liste ist sichtbar (kein Foto bleibt stehen) | |
 | 35 | Viele Touren: Karte öffnen, zu „Daten“, zurück zur Karte; Kategorie-Chip ganz rechts antippen | Zweites Öffnen sofort; gewählter Chip bleibt sichtbar | |
 | 36 | GPX-Datei importieren, speichern, dieselbe Datei erneut wählen | Warnung „vermutlich schon vorhanden“ mit Name und Datum, Knopf „Trotzdem speichern“; eine andere Datei zeigt keine Warnung | |
-| 37 | Daten → „Neue Tour“ → Android-Zurück | Nur das Sheet schließt sich, die App bleibt offen; danach zweimal Zurück verlässt die App wie gewohnt. Ebenso: Sheet öffnen → „GPX importieren“ → Zurück → Datenliste | |
+| 37 | (nach Umbau auf direkte Zurück-Abfrage, Version 0.8.0 ab Commit siehe Einstellungen) Daten → „Neue Tour“ → Android-Zurück | Nur das Sheet schließt sich, die App bleibt offen; danach zweimal Zurück verlässt die App wie gewohnt. Ebenso: Sheet öffnen → „GPX importieren“ → Zurück → Datenliste | |
 | 38 | Browser: Aufnahme starten, Standortfreigabe ablehnen | Gelbe Warnung „Standortfreigabe verweigert“ in der Aufnahme (nach höchstens ca. 10 s) | |
 | 39 | Design „System“ am Gerät, Backup erstellen; auf Gerät mit Design „Dunkel“ wiederherstellen (mit Einstellungen) | Danach folgt die App wieder dem System | |
 
