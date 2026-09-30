@@ -16,7 +16,7 @@ jobs:
       - run: npm install --package-lock-only --no-audit --no-fund
       - name: Lockfile committen
         run: |
-          if git diff --quiet -- package-lock.json && [ -f package-lock.json ]; then
+          if [ -z "$(git status --porcelain -- package-lock.json)" ]; then
             echo "package-lock.json ist unverändert."
             exit 0
           fi
